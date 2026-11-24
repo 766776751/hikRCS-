@@ -14,7 +14,7 @@
     "appId": "com.hikvision.rcsbox.desktop",
     "productName": "RCS工具拓展平台",
     "directories": {
-      "output": "dist-installer4",
+      "output": "dist-installer5",
       "buildResources": "build"
     },
     "files": [

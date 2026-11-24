@@ -7,11 +7,12 @@
  *  2. 探测一个可用端口（默认 6007，被占用则自动 +1 找空闲），
  *     通过 PORT 环境变量传给后端，避免 EADDRINUSE。
  *  3. 轮询等待后端 HTTP 就绪后加载窗口；启动失败给出可读提示。
- *  4. 单实例锁、应用窗口、托盘、优雅退出（一并结束后端子进程）。
+ *  4. 后端监听 0.0.0.0（局域网设备/PDA 可访问），托盘菜单显示并复制局域网地址。
+ *  5. 单实例锁、应用窗口、托盘、优雅退出（一并结束后端子进程）。
  */
 'use strict';
 
-const { app, BrowserWindow, Tray, Menu, dialog, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, Tray, Menu, dialog, shell, ipcMain, clipboard } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -114,6 +115,23 @@ if (!gotLock) {
 }
 
 // ------------------------------------------------------------
+// 局域网地址
+// ------------------------------------------------------------
+/** 返回本机所有非回环 IPv4 地址（去重），用于托盘显示局域网访问地址 */
+function getLanAddresses() {
+  const out = [];
+  const ifaces = os.networkInterfaces();
+  for (const name of Object.keys(ifaces)) {
+    for (const a of ifaces[name] || []) {
+      if (a.family === 'IPv4' && !a.internal && out.indexOf(a.address) === -1) {
+        out.push(a.address);
+      }
+    }
+  }
+  return out;
+}
+
+// ------------------------------------------------------------
 // 端口探测
 // ------------------------------------------------------------
 function isPortFree(port) {
@@ -121,7 +139,8 @@ function isPortFree(port) {
     const srv = net.createServer();
     srv.unref();
     srv.once('error', () => resolve(false));
-    srv.listen(port, '127.0.0.1', () => {
+    // 绑定所有网卡探测：后端以 0.0.0.0 启动，端口必须在所有网卡上都空闲
+    srv.listen(port, '0.0.0.0', () => {
       srv.close(() => resolve(true));
     });
   });
@@ -151,7 +170,9 @@ function startServer(port) {
       reject(new Error(`找不到后端入口：${SERVER_JS}`));
       return;
     }
-    const env = { ...process.env, ELECTRON_RUN_AS_NODE: '1', PORT: String(port), HOST: '127.0.0.1', NODE_ENV: 'production' };
+    // HOST=0.0.0.0：监听所有网卡，局域网设备/PDA 可用 http://本机IP:端口 访问
+    // （内嵌窗口仍走 127.0.0.1，本机访问不受网卡/防火墙影响）
+    const env = { ...process.env, ELECTRON_RUN_AS_NODE: '1', PORT: String(port), HOST: '0.0.0.0', NODE_ENV: 'production' };
     // npm/node_modules 查找从 APP_DIR 开始（server.js 在 APP_DIR 下，require 自然解析同目录 node_modules）
     serverProc = spawn(process.execPath, [SERVER_JS], {
       cwd: APP_DIR,
@@ -252,9 +273,36 @@ function createTray() {
   if (!fs.existsSync(ICON) || tray) return;
   tray = new Tray(ICON);
   tray.setToolTip('RCS工具拓展平台');
+
+  // 局域网地址在启动时生成；换网络后重启程序即可刷新
+  const lanIps = getLanAddresses();
+  const lanSubmenu = lanIps.length
+    ? lanIps.map((ip, i) => {
+        const url = `http://${ip}:${backendPort}/`;
+        return {
+          label: `网卡${i + 1}  ${url}`,
+          click: () => {
+            clipboard.writeText(url);
+            dialog.showMessageBox({
+              type: 'info', title: '已复制局域网地址',
+              message: `已复制到剪贴板：\n${url}`,
+              detail: '发给同一网络内的其他电脑/PDA 即可打开。\n若打不开，请在防火墙放行 TCP 端口 ' + backendPort,
+              buttons: ['确定']
+            });
+          }
+        };
+      })
+    : [{ label: '未检测到局域网地址（仅本机可用）', enabled: false }];
+  lanSubmenu.push(
+    { type: 'separator' },
+    { label: `其他设备需同网段 + 防火墙放行 TCP ${backendPort}`, enabled: false }
+  );
+
   const menu = Menu.buildFromTemplate([
     { label: '显示主窗口', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
-    { label: '打开浏览器版', click: () => shell.openExternal(`http://127.0.0.1:${backendPort}/`) },
+    { label: '打开浏览器版（本机）', click: () => shell.openExternal(`http://127.0.0.1:${backendPort}/`) },
+    { type: 'separator' },
+    { label: '局域网访问地址（点击复制）', submenu: lanSubmenu },
     { type: 'separator' },
     { label: '退出', click: () => { isQuitting = true; app.quit(); } }
   ]);
