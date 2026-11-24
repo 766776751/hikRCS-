@@ -1,0 +1,77 @@
+/**
+ * src-alarm/alarm.css — alarm pages scoped styles (recreated; Vue <style scoped>
+ * never applies to React DOM). Global classes (panel/tbl/badge/field/filter-bar/
+ * ipt/pager/empty/fp/dr-*/picker-*) come from base.css + task.css.
+ */
+
+/* ---- error / loading bars (shared look across 3 pages) ---- */
+.aq-error, .aq-loading,
+.pl-error, .pl-loading {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--line-soft);
+  font-size: 14px; margin-bottom: 12px;
+}
+.aq-error, .pl-error { color: var(--err); justify-content: flex-start; }
+.aq-loading, .pl-loading { color: var(--ink-500); justify-content: center; }
+
+/* ---- alarm query: mobile cards ---- */
+.aq-cards { display: flex; flex-direction: column; gap: 10px; }
+.alarm-item { padding: 12px 14px; border-left: 3px solid var(--err); box-shadow: var(--shadow-sm); }
+.alarm-item.resolved { border-left-color: var(--ok); }
+.ai-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.ai-source { flex: 1; min-width: 0; font-weight: 700; font-size: 0.88rem; color: var(--ink-900); }
+.ai-type { font-size: 0.84rem; font-weight: 600; color: var(--ink-700); margin-bottom: 6px; }
+.ai-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.72rem; color: var(--ink-400); }
+
+/* ---- "alerting" badge pulse ---- */
+.pulse { animation: al-pulse 1.6s ease-in-out infinite; }
+@keyframes al-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+/* ---- push log: mobile cards ---- */
+.pl-cards { display: flex; flex-direction: column; gap: 10px; }
+.pl-item { padding: 12px 14px; border-left: 3px solid var(--ok); box-shadow: var(--shadow-sm); }
+.pl-item.fail { border-left-color: var(--err); }
+.pi-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.pi-time { margin-left: auto; font-size: 0.74rem; color: var(--ink-400); }
+.pi-meta { display: flex; align-items: center; gap: 10px; font-size: 0.78rem; color: var(--ink-500); margin-bottom: 6px; }
+.pi-detail {
+  font-size: 0.78rem; color: var(--ink-700);
+  background: var(--line-soft); border-radius: 8px; padding: 8px 10px;
+  white-space: pre-wrap; word-break: break-all;
+}
+.pi-error { margin-top: 6px; font-size: 0.76rem; color: var(--err); word-break: break-all; }
+.pl-detail { font-size: 0.78rem; color: var(--ink-500); max-width: 420px; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- push config ---- */
+.pc-loading { text-align: center; color: var(--ink-500); padding: 40px 0; }
+.pc-grid { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.pc-grid .field:first-child { flex: 1 1 240px; }
+.pc-levels { display: flex; gap: 8px; }
+.pc-platforms { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.pc-tile { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.pc-tile-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+}
+.pc-tile-main { flex: 1; min-width: 0; }
+.pc-tile-name { font-weight: 800; font-size: 0.94rem; }
+.pc-tile-desc { font-size: 0.76rem; color: var(--ink-400); }
+.pc-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.url-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.url-row .ipt { flex: 1; }
+.pc-tip { margin-top: 10px; font-size: 0.76rem; color: var(--ink-400); }
+.pc-help { margin: 4px 0 16px; font-size: 0.78rem; color: var(--ink-500); }
+.pc-help a { color: var(--brand-500, #2563eb); text-decoration: none; word-break: break-all; }
+.pc-help a:hover { text-decoration: underline; }
+.box-body .pc-help { margin: 10px 0 0; }
+.pc-notice {
+  margin: 0 0 12px; padding: 10px 12px; border-radius: 8px;
+  background: #fff7e6; border: 1px solid #ffd591; color: #ad4e00;
+  font-size: 0.78rem; line-height: 1.6;
+}
+.pc-notice strong { color: #d46b08; }
+.box-foot {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 22px; border-top: 1px solid var(--line-soft); flex: none;
+}

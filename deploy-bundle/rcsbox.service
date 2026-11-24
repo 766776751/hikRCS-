@@ -1,0 +1,24 @@
+[Unit]
+Description=RCS Box - AGV Function Integration Platform
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=__INSTALL_DIR__/app
+Environment=NODE_ENV=production
+Environment=HOST=0.0.0.0
+Environment=PORT=6007
+# 如需改端口，同步修改这里的 PORT、防火墙端口及 app/service_config.json
+Environment=PATH=__INSTALL_DIR__/runtime/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=__INSTALL_DIR__/runtime/node/bin/node __INSTALL_DIR__/app/server.js
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+StandardOutput=append:__INSTALL_DIR__/logs/server.log
+StandardError=append:__INSTALL_DIR__/logs/server.err.log
+
+[Install]
+WantedBy=multi-user.target

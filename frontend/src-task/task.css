@@ -1,0 +1,155 @@
+/**
+ * ============================================================================
+ * src-task/task.css — 任务查询/任务取消 页面样式（tq- 与复刻类名）
+ * ----------------------------------------------------------------------------
+ * 全局 base.css 已提供 panel/tbl/badge/field/filter-bar/ipt/pager/empty 等
+ * 公共类（React 挂载在同一文档，可直接使用）。
+ * 本文件只补齐原 Vue 组件 <style scoped> 内的样式（scoped 样式不会作用于
+ * React DOM，故必须在此复刻），类名与原版保持一致便于对照。
+ * 令牌引用沿用旧全局变量（--brand-* 等，与 base.css 同源，保持视觉一致）。
+ * ============================================================================
+ */
+
+/* ---------- 筛选面板 FilterPanel（原 scoped） ---------- */
+.fp { margin-bottom: 14px; overflow: hidden; }
+.fp-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 16px;
+  font-size: 14px; font-weight: 700; color: var(--ink-700);
+  cursor: pointer; user-select: none;
+}
+.fp-head svg { width: 15px; height: 15px; color: var(--brand-500); }
+.fp-arrow { margin-left: auto; color: var(--ink-400); transition: transform 0.2s ease; }
+.fp.collapsed .fp-arrow { transform: rotate(-90deg); }
+.fp-body { padding: 2px 16px 16px; }
+.fp.collapsed .fp-body { display: none; }
+@media (min-width: 768px) {
+  .fp-arrow { display: none; }
+  .fp-head { cursor: default; }
+  .fp.collapsed .fp-body { display: block; }
+}
+
+/* ---------- 日期范围 DateRangeField（原 scoped 部分） ---------- */
+.dr-field { position: relative; width: 100%; min-width: 200px; }
+.dr-btn {
+  display: flex; align-items: center;
+  text-align: left; justify-content: flex-start;
+  color: var(--ink-700);
+}
+.dr-label {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 0.8rem;
+}
+.dr-pop-base { position: fixed; z-index: 4000; }
+@media (max-width: 767px) {
+  .daterange-pop {
+    position: fixed !important;
+    left: 50% !important; top: 26% !important;
+    transform: translateX(-50%);
+    width: min(92vw, 360px);
+  }
+  .dr-label { font-size: 0.74rem; }
+}
+
+/* ---------- 下拉选择 PickerSelect（原 scoped 部分） ---------- */
+.picker-native {
+  padding-right: 28px;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.pk-ph { color: var(--ink-400); font-size: 0.82rem; }
+@media (max-width: 767px) {
+  .pk-ph { font-size: 13px; }
+}
+
+/* ---------- 通用（查询/取消两页共用的错误条与加载条） ---------- */
+.q-error, .q-loading {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.q-error { color: var(--err); justify-content: flex-start; }
+.q-loading { color: var(--ink-500); justify-content: center; }
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--brand-100);
+  border-top-color: var(--brand-500);
+  border-radius: 50%;
+  animation: tq-spin 0.8s linear infinite;
+  flex: none;
+}
+@keyframes tq-spin { to { transform: rotate(360deg); } }
+
+/* ---------- 移动端任务卡片（原两页 scoped，类名一致） ---------- */
+.m-cards { display: flex; flex-direction: column; gap: 10px; }
+.task-item { padding: 12px 14px; box-shadow: var(--shadow-sm); }
+.task-item.has-device { border-left: 3px solid var(--brand-500); }
+.task-item.no-device { border-left: 3px solid var(--line); }
+.ti-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ti-seq { font-size: 0.72rem; color: var(--ink-400); }
+.ti-code {
+  flex: 1; min-width: 0;
+  font-size: 0.82rem; font-weight: 700; color: var(--ink-900);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ti-row { font-size: 0.8rem; color: var(--ink-700); margin-bottom: 8px; flex-wrap: wrap; }
+.ti-label { color: var(--ink-400); margin-right: 4px; }
+.ti-value { font-weight: 700; }
+.ti-value.red { color: var(--err); }
+.ti-route {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0;
+  border-top: 2px solid var(--line-soft);
+  border-bottom: 2px solid var(--line-soft);
+  font-size: 0.82rem;
+}
+.ti-route-point { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ti-route-tag { font-size: 0.66rem; font-weight: 700; }
+.ti-route-tag.start { color: var(--warn); }
+.ti-route-tag.end { color: var(--ok); }
+.ti-route-map { color: var(--ink-400); font-size: 0.7rem; }
+.ti-route-arrow { color: var(--warn); flex: none; }
+.ti-time { margin-top: 8px; font-size: 0.72rem; color: var(--ink-400); }
+
+/* ---------- 任务取消页专属 ---------- */
+.cancel-banner {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--warn-bg);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: var(--warn-ink);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.cancel-banner svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+.batch-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  font-size: 0.84rem;
+  color: var(--ink-500);
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+.batch-bar.active { background: var(--err-bg); border: 1px solid rgba(239, 68, 68, 0.35); color: var(--err-ink); }
+.batch-bar b { color: var(--err); font-size: 1rem; }
+.cb { width: 17px; height: 17px; accent-color: var(--brand-500); cursor: pointer; }
+tr.checked td { background: var(--err-bg); }
+.task-item.cancel-checked { opacity: 0.55; border-left: 3px solid var(--err); }
+.task-item.cancel-checked .ti-code { text-decoration: line-through; }
+.ti-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+}

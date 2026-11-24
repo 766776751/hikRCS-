@@ -1,0 +1,123 @@
+/**
+ * src-report/report.css — daily report + dashboard scoped styles (recreated,
+ * Vue <style scoped> never applies to React DOM). Global kpi/panel classes reused.
+ */
+
+/* ---- shared toolbar ---- */
+.rep-toolbar, .dash-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 12px; margin-bottom: 16px;
+}
+.dash-toolbar {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--canvas);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding: 8px 0;
+}
+
+/* ---- error bar ---- */
+.rep-error, .dash-error {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; border-radius: 12px;
+  background: var(--err-bg); border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--err-ink); font-size: 14px; margin-bottom: 14px;
+}
+
+/* ---- daily report ---- */
+.rep-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 16px;
+}
+.rs-chip {
+  --c: var(--brand-500);
+  background: var(--surface); border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md); padding: 14px 16px;
+  position: relative; overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.rs-chip::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--c);
+}
+.rs-label { display: block; font-size: 0.74rem; color: var(--ink-500); font-weight: 600; }
+.rs-value { font-size: 1.4rem; font-weight: 800; color: var(--ink-900); }
+.rep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.rep-panel { padding: 18px 20px; }
+.rep-panel.span-2 { grid-column: span 2; }
+.rep-title {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  font-size: 0.92rem; font-weight: 800; margin: 0 0 14px;
+}
+.rep-title-hint {
+  margin-left: auto;
+  font-size: 0.72rem; font-weight: 500; color: var(--ink-400);
+  text-align: right; line-height: 1.5;
+}
+.rep-title::before {
+  content: ''; width: 3px; height: 14px; border-radius: 4px;
+  background: linear-gradient(180deg, var(--brand-400), var(--brand-600));
+}
+.rep-chart { position: relative; height: 268px; }
+.rep-chart.tall { height: 320px; }
+.rep-chart canvas { position: absolute; inset: 0; }
+
+/* ---- dashboard ---- */
+.dash-seg {
+  display: inline-flex; background: var(--line);
+  border-radius: 11px; padding: 3px; gap: 2px;
+}
+.seg-btn {
+  height: 32px; padding: 0 16px; border-radius: 9px;
+  font-size: 0.82rem; font-weight: 700; color: var(--ink-500);
+  border: none; background: transparent; cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+.seg-btn.active { background: var(--chip-bg); color: var(--chip-fg); box-shadow: var(--shadow-sm); }
+.dash-updated { margin-left: auto; font-size: 0.76rem; color: var(--ink-400); }
+.dash-kpis {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px; margin-bottom: 16px;
+}
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dash-panel { padding: 18px 20px; }
+.dash-panel.span-2 { grid-column: span 2; }
+.dash-panel-title {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 0.92rem; font-weight: 800; color: var(--ink-900);
+  margin: 0 0 14px;
+}
+.dash-panel-title::before {
+  content: ''; width: 3px; height: 14px; border-radius: 4px;
+  background: linear-gradient(180deg, var(--brand-400), var(--brand-600));
+}
+.dash-chart { position: relative; height: 268px; }
+.dash-chart.tall { height: 300px; }
+.dash-chart canvas { position: absolute; inset: 0; }
+.dash-rank { min-height: 200px; }
+.rank-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+.rank-no { font-size: 0.72rem; color: var(--ink-400); width: 22px; flex: none; }
+.rank-name {
+  flex: 1; min-width: 0; font-size: 0.8rem; font-weight: 700;
+  color: var(--ink-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rank-track {
+  flex: 1.4; height: 8px; border-radius: 999px;
+  background: var(--line-soft); overflow: hidden;
+}
+.rank-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand-400), var(--brand-600));
+  transition: width 0.4s ease-out;
+}
+.rank-val { font-size: 0.76rem; color: var(--ink-500); flex: none; width: 52px; text-align: right; }
+.dash-footnote { margin: 10px 0 0; font-size: 0.7rem; color: var(--ink-400); }
+
+@media (max-width: 900px) {
+  .rep-grid { grid-template-columns: 1fr; }
+  .rep-panel.span-2 { grid-column: span 1; }
+  .rep-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1100px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-panel.span-2 { grid-column: span 1; }
+}

@@ -1,0 +1,24 @@
+{
+  "projectName": "",
+  "webhookUrl": "",
+  "pushEnabled": false,
+  "pushInterval": 10,
+  "pushLevels": [
+    3
+  ],
+  "port": 6007,
+  "dingtalkWebhookUrl": "",
+  "dingtalkPushEnabled": false,
+  "dingtalkKeyword": "告警",
+  "wechatOaEnabled": false,
+  "wechatOaAppId": "",
+  "wechatOaAppSecret": "",
+  "wechatOaTemplateId": "",
+  "wechatOaOpenIds": [],
+  "feishuWebhookUrl": "",
+  "feishuPushEnabled": false,
+  "webhookUrls": [],
+  "dingtalkWebhookUrls": [],
+  "feishuWebhookUrls": [],
+  "manual_task_url": ""
+}

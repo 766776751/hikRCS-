@@ -1,0 +1,65 @@
+{
+  "name": "rcsbox-desktop",
+  "version": "1.0.0",
+  "description": "海康机器人RCS工具拓展平台 - 桌面版（内置服务端）",
+  "main": "main.js",
+  "author": "WorkBuddy AI",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --x64",
+    "dist:dir": "electron-builder --win --x64 --dir"
+  },
+  "build": {
+    "appId": "com.hikvision.rcsbox.desktop",
+    "productName": "RCS工具拓展平台",
+    "directories": {
+      "output": "dist-installer4",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "build/icon.ico"
+    ],
+    "extraResources": [
+      {
+        "from": "app",
+        "to": "app-dist"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "RCS工具拓展平台-安装包-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "RCS工具拓展平台",
+      "installerLanguages": [
+        "zh_CN",
+        "en_US"
+      ],
+      "language": "2052",
+      "deleteAppDataOnUninstall": false
+    },
+    "npmRebuild": false,
+    "compression": "maximum",
+    "asar": true
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^24.13.3"
+  }
+}

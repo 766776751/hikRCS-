@@ -1,0 +1,644 @@
+/* ============================================================================
+ * 站点监控（React 版）样式表 —— 设计规则已固化，修改前必读本文件顶部注释
+ * ============================================================================
+ *
+ * 【历史故障复盘】旧 Vue 版反复出现「图标偏大/偏移、卡片内左右边界错位」，
+ * 两个根因，本文件已彻底规避：
+ *   根因1：旧版图标用 `width: 1em`，尺寸随父级 font-size 浮动，放大即失控。
+ *   根因2：旧版用 flex 做跨轴对齐，图标与多行文字的「视觉中心」天然不一致；
+ *          后又改用 absolute+translateY，同样依赖兄弟节点高度。
+ *
+ * ----------------------------------------------------------------------------
+ * 【铁律 1 · 图标尺寸】—— 违反即重现历史 bug
+ *   · 移动端卡片图标：26 × 26 px
+ *   · PC 表格「类型」列图标：16 × 16 px
+ *   · 必须使用 px 绝对单位，禁止 em / rem / % / vw 等相对单位
+ *   · 必须同时声明 width 与 height，并配 object-fit: contain
+ *   · 禁止依赖父级 font-size 控制图标大小
+ *
+ * 【铁律 2 · 图标对齐】
+ *   · 图标是 Grid 单元格成员，用 align-self:center 在其单元格内垂直居中，
+ *     不依赖文字区块高度，因此「两行文字 vs 三行文字」都不会让图标偏移。
+ *   · 禁止 position:absolute + transform:translateY(-50%)
+ *
+ * 【铁律 3 · 卡片内部左右对齐】
+ *   · 卡片统一 display:grid，grid-template-columns: 26px 1fr（图标列固定宽度）
+ *   · 所有文字行必须显式 grid-column: 2，左边界由 Grid 列严格保证一致
+ *   · 禁止给单行单独加 margin-left / padding-left，否则立即产生缩进错位
+ *   · 图标 grid-column: 1 / grid-row: 1 / span 2（跨全部文字行并居中）
+ *
+ * 【间距规范（统一口径）】
+ *   卡片内边距     padding: 10px 12px
+ *   图标列→文字列  column-gap: 12px
+ *   文字行间距     row-gap: 4px
+ *   卡片之间       gap: 8px
+ *   状态色条       卡片 5px / 表格行 4px
+ *   状态圆点       8px（表格首列）
+ *
+ * 【命名约定】
+ *   所有类名以 sm- 开头，全部定义在 .sm-root 作用域内，
+ *   避免与 Vue 全局样式互相污染（防后续改代码破坏排版）。
+ * ========================================================================== */
+
+/* ---------- 设计令牌（复用项目全局令牌，带兜底值保证独立可用） ---------- */
+.sm-root {
+  --sm-brand-600: var(--brand-600, #1a4fa0);
+  --sm-brand-500: var(--brand-500, #2563eb);
+  --sm-brand-50: var(--brand-50, #eff6ff);
+
+  --sm-ink-900: var(--ink-900, #0f172a);
+  --sm-ink-700: var(--ink-700, #334155);
+  --sm-ink-500: var(--ink-500, #64748b);
+  --sm-ink-400: var(--ink-400, #94a3b8);
+
+  --sm-line: var(--line, #e2e8f0);
+  --sm-line-soft: var(--line-soft, #eef2f7);
+  --sm-surface: var(--surface, #ffffff);
+
+  --sm-radius: var(--radius-md, 12px);
+  --sm-shadow-sm: var(--shadow-sm, 0 1px 2px rgba(15, 38, 87, 0.06));
+
+  /* 状态三色（业务语义固化，与货架监控一致）
+     无货=绿 / 有货=黄 / 锁定=灰，优先级 locked > occupied > empty */
+  --sm-st-empty: #22c55e;
+  --sm-st-occupied: #f59e0b;
+  --sm-st-locked: #94a3b8;
+  --sm-st-empty-bg: #f0fdf4;
+  --sm-st-occupied-bg: #fffbeb;
+  --sm-st-locked-bg: #f1f3f5;
+}
+
+/* ---------- 根容器 ---------- */
+.sm-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ========================== 工具栏 ==========================
+ * 一行排布：搜索框（自适应） / 地图下拉 / 载具分段 / 刷新按钮
+ * 移动端（≤640px）自动换行，搜索框独占一行
+ * ========================================================== */
+.sm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sm-field {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.sm-field-search {
+  flex: 1 1 220px;
+  max-width: 320px;
+}
+.sm-field-select {
+  flex: 0 0 auto;
+}
+.sm-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ---------- 搜索框（带清除按钮） ---------- */
+.sm-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.sm-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 32px 0 12px;
+  font-size: 0.85rem;
+  color: var(--sm-ink-900);
+  background: var(--sm-surface);
+  border: 1px solid var(--sm-line);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.sm-input:focus {
+  border-color: var(--sm-brand-500);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.sm-input::placeholder {
+  /* 提示词必须小于输入值，避免与真实内容混淆 */
+  color: var(--sm-ink-400);
+  font-size: 0.8rem;
+}
+.sm-clear {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--sm-line-soft);
+  color: var(--sm-ink-500);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.sm-clear:hover {
+  background: var(--sm-line);
+}
+
+/* ---------- 下拉选择 ---------- */
+.sm-select {
+  height: 38px;
+  padding: 0 30px 0 12px;
+  font-size: 0.85rem;
+  color: var(--sm-ink-900);
+  background: var(--sm-surface);
+  border: 1px solid var(--sm-line);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.sm-select:focus {
+  border-color: var(--sm-brand-500);
+}
+
+/* ---------- 分段控件（全部 / 有载具 / 无载具） ---------- */
+.sm-pills {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--sm-line-soft);
+  border-radius: 10px;
+  gap: 2px;
+}
+.sm-pill {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--sm-ink-500);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+.sm-pill:hover {
+  color: var(--sm-ink-700);
+}
+.sm-pill.is-active {
+  color: #fff;
+  background: var(--sm-brand-500);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+}
+
+/* ---------- 按钮 ---------- */
+.sm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+.sm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.sm-btn-primary {
+  color: #fff;
+  background: var(--sm-brand-500);
+}
+.sm-btn-primary:hover:not(:disabled) {
+  background: var(--sm-brand-600);
+}
+.sm-btn-ghost {
+  color: var(--sm-ink-700);
+  background: var(--sm-surface);
+  border-color: var(--sm-line);
+}
+.sm-btn-ghost:hover {
+  background: var(--sm-brand-50);
+}
+
+/* ========================== 站点类型图例 ==========================
+ * 3 列网格；图标 20px（图例尺寸，独立于卡片 26px / 表格 16px）
+ * 每个格子：图标 + 名称（上） + 数量（下，位于名称正下方）
+ * 可点击筛选：选中态描边 + 淡蓝底
+ * ========================================================== */
+.sm-type-legend {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.sm-tl-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--sm-surface);
+  border: 1px solid var(--sm-line-soft);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+}
+.sm-tl-item:hover {
+  border-color: var(--sm-brand-500);
+}
+.sm-tl-item.is-active {
+  border-color: var(--sm-brand-500);
+  background: var(--sm-brand-50);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.14);
+}
+/* 图例图标：固定 20px（见铁律1，禁止相对单位） */
+.sm-tl-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  display: block;
+  object-fit: contain;
+}
+.sm-tl-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sm-tl-name {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--sm-ink-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sm-tl-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sm-brand-600);
+}
+
+/* ========================== 状态图例 ========================== */
+.sm-status-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--sm-ink-500);
+}
+.sm-status-legend .sm-slg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sm-status-legend .sm-sdot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: none;
+}
+
+/* ---------- 统计信息 ---------- */
+.sm-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.76rem;
+  color: var(--sm-ink-500);
+}
+.sm-meta b {
+  color: var(--sm-ink-700);
+}
+
+/* ============================================================================
+ * 移动端站点卡片 —— 本次重写的核心布局（对应铁律 2 / 3）
+ *
+ *   ┌───────────────────────────────────────────┐
+ *   │  [图标26px]  │ 行1：站点名称        编码  │
+ *   │  (跨2行)    │ 行2：类型/载具/地图        │
+ *   │  (居中)     │                            │
+ *   └───────────────────────────────────────────┘
+ *        col 1            col 2 (1fr)
+ *
+ * · 图标在第 1 列、跨全部文字行，align-self:center → 与文字块整体垂直居中
+ * · 两行文字都在第 2 列 → 左边界严格一致，绝不出现缩进错位
+ * · 图标尺寸硬编码 26px，不受任何 font-size 影响
+ * ========================================================================== */
+.sm-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sm-card {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  padding: 10px 12px;
+  background: var(--sm-surface);
+  border: 1px solid var(--sm-line-soft);
+  border-radius: var(--sm-radius);
+  box-shadow: var(--sm-shadow-sm);
+}
+/* 图标：第 1 列，跨 2 行，单元格内双轴居中，尺寸硬编码 */
+.sm-card__icon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  justify-self: center;
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  display: block;
+  object-fit: contain;
+}
+/* 两行文字：都固定在第 2 列，左边界一致 */
+.sm-card__line1 {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.sm-card__line2 {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 14px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--sm-ink-500);
+  min-width: 0;
+}
+.sm-card__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--sm-ink-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sm-card__code {
+  flex: none;
+  padding: 2px 6px;
+  font-size: 0.66rem;
+  color: var(--sm-ink-500);
+  background: var(--sm-line-soft);
+  border-radius: 6px;
+}
+.sm-card__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+.sm-card__item > b {
+  font-weight: 500;
+  color: var(--sm-ink-400);
+}
+.sm-card__none {
+  color: var(--sm-ink-400);
+}
+
+/* 卡片状态：左侧 5px 色条 + 淡底色（无货绿 / 有货黄 / 锁定灰） */
+.sm-card.is-empty {
+  background: var(--sm-st-empty-bg);
+  box-shadow: inset 5px 0 0 var(--sm-st-empty), var(--sm-shadow-sm);
+}
+.sm-card.is-occupied {
+  background: var(--sm-st-occupied-bg);
+  box-shadow: inset 5px 0 0 var(--sm-st-occupied), var(--sm-shadow-sm);
+}
+.sm-card.is-locked {
+  background: var(--sm-st-locked-bg);
+  box-shadow: inset 5px 0 0 var(--sm-st-locked), var(--sm-shadow-sm);
+}
+
+/* ========================== PC 端表格 ==========================
+ * 按地图分组；表头标题与每列内容严格一一对应
+ * 状态：首列 4px 色条 + 整行淡底；首列另有 8px 状态圆点
+ * 类型列图标固定 16px（见铁律1），与右侧文字徽章垂直居中对齐
+ * ========================================================== */
+.sm-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sm-group {
+  background: var(--sm-surface);
+  border: 1px solid var(--sm-line-soft);
+  border-radius: var(--sm-radius);
+  overflow: hidden;
+}
+.sm-group__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  background: var(--sm-brand-50);
+  border-bottom: 1px solid var(--sm-line-soft);
+}
+.sm-group__name {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: var(--sm-ink-900);
+}
+.sm-group__code {
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  color: var(--sm-brand-600);
+  background: var(--sm-surface);
+  border-radius: 999px;
+}
+.sm-group__count {
+  margin-left: auto;
+  font-size: 0.76rem;
+  color: var(--sm-ink-500);
+}
+
+.sm-tbl-wrap {
+  overflow-x: auto;
+}
+.sm-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+.sm-tbl th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--sm-ink-500);
+  background: var(--sm-surface);
+  border-bottom: 1px solid var(--sm-line);
+  white-space: nowrap;
+}
+.sm-tbl td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--sm-line-soft);
+  color: var(--sm-ink-700);
+  vertical-align: middle;
+}
+.sm-tbl tbody tr:hover td {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+/* 首列：状态圆点 + 站点名称 */
+.sm-tbl .sm-cell-name {
+  font-weight: 600;
+  color: var(--sm-ink-900);
+}
+.sm-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+.sm-status-dot.is-empty {
+  background: var(--sm-st-empty);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16);
+}
+.sm-status-dot.is-occupied {
+  background: var(--sm-st-occupied);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16);
+}
+.sm-status-dot.is-locked {
+  background: var(--sm-st-locked);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.18);
+}
+
+/* 类型列：图标 16px + 文字徽章，两者垂直居中对齐 */
+.sm-type-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sm-type-cell__icon {
+  /* 固定 16px：与右侧文字徽章同高，避免旧版 20px 显得比文字大一圈 */
+  width: 16px;
+  height: 16px;
+  flex: none;
+  display: block;
+  object-fit: contain;
+}
+.sm-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.sm-badge-info {
+  color: var(--info-ink, #1e40af);
+  background: var(--info-bg, #dbeafe);
+}
+
+/* 表格行状态：首列 4px 色条 + 整行淡底 */
+.sm-tbl tbody tr.is-empty td {
+  background: var(--sm-st-empty-bg);
+}
+.sm-tbl tbody tr.is-empty td:first-child {
+  box-shadow: inset 4px 0 0 var(--sm-st-empty);
+}
+.sm-tbl tbody tr.is-occupied td {
+  background: var(--sm-st-occupied-bg);
+}
+.sm-tbl tbody tr.is-occupied td:first-child {
+  box-shadow: inset 4px 0 0 var(--sm-st-occupied);
+}
+.sm-tbl tbody tr.is-locked td {
+  background: var(--sm-st-locked-bg);
+}
+.sm-tbl tbody tr.is-locked td:first-child {
+  box-shadow: inset 4px 0 0 var(--sm-st-locked);
+}
+
+/* ---------- 状态/加载/错误 ---------- */
+.sm-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--sm-ink-400);
+  font-size: 0.84rem;
+}
+.sm-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: var(--sm-ink-500);
+  font-size: 0.84rem;
+}
+.sm-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--sm-brand-50);
+  border-top-color: var(--sm-brand-500);
+  border-radius: 50%;
+  animation: sm-spin 0.8s linear infinite;
+}
+@keyframes sm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.sm-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  color: var(--err-ink, #991b1b);
+  background: var(--err-bg, #fee2e2);
+  border-radius: 10px;
+  font-size: 0.82rem;
+}
+
+/* ========================== 响应式 ==========================
+ * 断点 640px：仅 ≤640px 走移动卡片，>640px 走 PC 表格
+ * （旧版用全局 767px 导致分屏/缩放的 PC 窗口被误判成手机，此处单独收紧）
+ * ========================================================== */
+@media (max-width: 640px) {
+  .sm-toolbar {
+    gap: 8px;
+  }
+  .sm-field-search {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+  .sm-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .sm-actions .sm-btn {
+    flex: 1;
+    justify-content: center;
+  }
+  .sm-type-legend {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

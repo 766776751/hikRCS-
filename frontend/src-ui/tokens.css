@@ -1,0 +1,66 @@
+/**
+ * ============================================================================
+ * src-ui/tokens.css — 全站设计令牌（唯一事实源）
+ * ----------------------------------------------------------------------------
+ * 依据 docs/DESIGN-SPEC.md 第一章。任何 React 组件禁止写死颜色/字号/间距字面量，
+ * 必须引用这里的变量。修改令牌必须同步更新 DESIGN-SPEC.md。
+ *
+ * 命名：--ui-* 前缀，与旧 Vue 全局变量（--brand-* 等）互不干扰。
+ * ============================================================================
+ */
+
+:root {
+  /* ---- 品牌色（AGV 工业蓝） ---- */
+  --ui-brand-50: #eff6ff;
+  --ui-brand-100: #dbeafe;
+  --ui-brand-300: #93c5fd;
+  --ui-brand-400: #60a5fa;
+  --ui-brand-500: #3b82f6;
+  --ui-brand-600: #2563eb;
+  --ui-brand-700: #1d4ed8;
+  --ui-brand-900: #0c1c47;
+
+  /* ---- 状态色（业务语义全局唯一映射，禁止挪用） ----
+     无货/正常=绿  有货/警告=黄(淡黄为用户钦定)  满货/危险=红  锁定/停用=灰 */
+  --ui-ok: #22c55e;      --ui-ok-bg: #f0fdf4;
+  --ui-warn: #f59e0b;    --ui-warn-bg: #fffbeb;
+  --ui-err: #ef4444;     --ui-err-bg: #fef2f2;
+  --ui-locked: #94a3b8;  --ui-locked-bg: #f1f3f5;
+
+  /* ---- 中性色 ---- */
+  --ui-ink-900: #0f172a;
+  --ui-ink-700: #334155;
+  --ui-ink-500: #64748b;
+  --ui-ink-400: #94a3b8;
+  --ui-ink-300: #c4c9d4;
+  --ui-line-soft: #e5e9f0;
+  --ui-surface: #ffffff;
+  --ui-bg: #f6f8fb;
+
+  /* ---- 字号阶梯（固定 7 档，禁止组件尺寸用 em/rem） ---- */
+  --ui-fs-12: 12px;
+  --ui-fs-13: 13px;
+  --ui-fs-14: 14px;
+  --ui-fs-16: 16px;
+  --ui-fs-18: 18px;
+  --ui-fs-22: 22px;
+  --ui-fs-28: 28px;
+
+  /* ---- 圆角 ---- */
+  --ui-r-ctrl: 8px;    /* 控件 */
+  --ui-r-card: 12px;   /* 卡片 */
+  --ui-r-modal: 16px;  /* 弹窗 */
+  --ui-r-pill: 999px;  /* 胶囊 */
+
+  /* ---- 阴影三档 ---- */
+  --ui-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --ui-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.10);
+  --ui-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.16);
+
+  /* ---- 动效令牌 ---- */
+  --ui-dur-fast: 150ms;   /* 微交互 */
+  --ui-dur-base: 250ms;   /* 悬停/开关 */
+  --ui-dur-slow: 300ms;   /* 弹窗/转场 */
+  --ui-ease: ease-out;
+  --ui-ease-back: cubic-bezier(0.175, 0.885, 0.32, 1.275); /* galaxy 高频弹性曲线 */
+}

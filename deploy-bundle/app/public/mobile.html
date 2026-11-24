@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RCS工具拓展 - 移动端</title>
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    if (window.innerWidth >= 768) location.replace('/index.html');
+  </script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --border: #e8ecf1;
+      --text: #1a202c;
+      --text2: #4a5568;
+      --text3: #718096;
+      --text4: #a0aec0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { font-size: 16px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      width: 100%;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding-bottom: 90px;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { display: none; }
+
+    /* ===== Header ===== */
+    .hd {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+      padding: 10px 4px 10px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hd::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .hd::before {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 150px;
+      height: 150px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .hd-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+      word-break: break-all;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .hd-title .hd-main {
+      background: linear-gradient(90deg, #fff 0%, #93c5fd 20%, #fde68a 40%, #fff 60%, #c4b5fd 80%, #6ee7b7 100%);
+      background-size: 300% 300%;
+      animation: gradientFlow 4s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hd-title .hd-tag {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.65rem;
+      font-weight: 400;
+      flex-shrink: 0;
+    }
+
+    .hd-sub {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 4px;
+      position: relative;
+      z-index: 1;
+      white-space: nowrap;
+    }
+
+    /* ===== Bottom Nav ===== */
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      background: rgba(255,255,255,0.98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 200;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 0 10px;
+      font-size: 0.68rem;
+      color: var(--text3);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      position: relative;
+    }
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 1px;
+    }
+    .nav-item svg { width: 24px; height: 24px; margin-bottom: 3px; }
+
+    /* ===== Page Container ===== */
+    .page { display: none; padding: 12px 14px 20px; overflow: hidden; }
+    .page.active { display: block; animation: fadeIn 0.2s ease; overflow: visible; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ===== Cards ===== */
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .card-title .filter-btn {
+      font-size: 0.75rem;
+      margin-left: auto;
+      color: var(--text4);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .card-title .filter-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+    .card.collapsed .card-body { display: none; }
+    .card.collapsed .card-title { margin-bottom: 0; }
+    .card-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .card-title::before {
+      content: '';
+      width: 3px;
+      height: 16px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    /* ===== Form ===== */
+    .field { margin-bottom: 14px; }
+    .field-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .field-row > div { flex: 1; min-width: 0; }
+    .field-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text3);
+      margin-bottom: 1px;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .input, .select {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      background: var(--card);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .input:focus, .select:focus {
+      border-color: var(--primary);
+    }
+    .select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 28px; }
+    .input-sm { font-size: 0.82rem; padding: 7px 8px; min-width: 0; width: 100%; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--text); outline: none; -webkit-appearance: none; }
+    .input-wrap { position: relative; display: flex; align-items: center; width: 100%; }
+    .input-wrap .input-sm { padding-right: 28px; }
+    .input-clear {
+      position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+      width: 22px; height: 22px; border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
+      background: var(--gray-200); cursor: pointer; flex-shrink: 0; z-index: 1;
+    }
+    .input-clear svg { width: 12px; height: 12px; }
+    .input-clear.has-value { display: flex; }
+
+    /* ===== Buttons ===== */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(239,68,68,0.25);
+    }
+    .btn-outline {
+      background: var(--card);
+      color: var(--text2);
+      border: 1.5px solid var(--border);
+    }
+    .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-row .btn { flex: 1; padding: 8px; font-size: 0.82rem; }
+    .btn-sm {
+      display: inline-flex;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      width: auto;
+      border-radius: 8px;
+    }
+
+    /* ===== Pagination ===== */
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 0 4px;
+    }
+    .pager-btn {
+      padding: 7px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      font-size: 0.82rem;
+      color: var(--text2);
+      cursor: pointer;
+    }
+    .pager-btn:disabled { opacity: 0.35; }
+    .pager-info { font-size: 0.8rem; color: var(--text3); }
+
+    /* ===== Chips ===== */
+    .chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      margin-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex-shrink: 0;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .chip.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* ===== Status Badge ===== */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+    .badge-gray { background: #f1f5f9; color: #475569; }
+
+    /* ===== Site Card ===== */
+    .site-item {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .site-item:active { background: var(--gray-50); }
+    .site-icon { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+    .site-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .site-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .site-name { font-size: 0.9rem; font-weight: 600; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .site-carrier { font-size: 0.72rem; color: var(--text2); flex-shrink: 0; white-space: nowrap; font-family: 'SF Mono', monospace; }
+    .site-bottom { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .site-code { font-size: 0.72rem; color: var(--text3); font-family: 'SF Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+    .site-map { font-size: 0.68rem; color: var(--text4); flex-shrink: 0; white-space: nowrap; }
+
+    /* ===== Seq Number ===== */
+    .seq-num {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      font-size: 0.6rem;
+      color: var(--text4);
+      background: var(--bg);
+      border-radius: 4px;
+      padding: 0 3px;
+      line-height: 1.4;
+      font-weight: 600;
+      z-index: 1;
+    }
+
+    /* ===== Task Card ===== */
+    .task-item {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--border);
+      transition: all 0.15s;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+    .task-item:active { background: #f8fafc; }
+    .task-item.has-device { border-left-color: var(--primary); background: #eff6ff; }
+    .task-item.no-device { border-left-color: var(--text3); background: #f9fafb; }
+    .task-item.cancel-checked { opacity: 0.5; }
+    .task-item.cancel-checked .task-id,
+    .task-item.cancel-checked .task-row-value { text-decoration: line-through; color: var(--text4); }
+    .task-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      white-space: nowrap;
+    }
+    .task-id {
+      font-size: 0.72rem;
+      color: var(--text3);
+      font-family: 'SF Mono', monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 220px;
+    }
+    .task-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 4px 0;
+      gap: 8px;
+    }
+    .task-row-label { color: var(--text3); white-space: nowrap; flex-shrink: 0; font-size: 0.8rem; }
+    .task-row-value { font-weight: 600; color: var(--text); min-width: 0; white-space: nowrap; }
+    .task-row-value.red { color: var(--danger); }
+    .task-row-value.green { color: var(--success); }
+
+    /* ===== Checkbox ===== */
+    .cb {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ===== Alarm Card ===== */
+    .alarm-item {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--text3);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+    .alarm-item.resolved { border-left-color: var(--success); }
+
+    /* ===== Empty & Loading ===== */
+    .empty {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--text4);
+      font-size: 0.85rem;
+    }
+    .empty svg { opacity: 0.3; margin-bottom: 12px; }
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: var(--text4);
+    }
+
+    /* ===== Dialog ===== */
+    .dlg-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      padding: 24px;
+    }
+    .dlg-overlay.show { display: flex; }
+    .dlg-box {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 28px 24px 24px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      animation: dlgIn 0.2s ease;
+    }
+    @keyframes dlgIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+    .dlg-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dlg-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .dlg-msg { font-size: 0.88rem; color: var(--text2); line-height: 1.6; margin-bottom: 24px; }
+    .dlg-btns { display: flex; gap: 10px; }
+    .dlg-btns .btn { flex: 1; font-size: 0.9rem; padding: 11px; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #fff;
+      z-index: 400;
+      opacity: 0;
+      transition: opacity 0.3s;
+      max-width: 340px;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; }
+    .toast-success { background: var(--success); }
+    .toast-error { background: var(--danger); }
+    .toast-info { background: var(--primary); }
+
+    /* ===== Custom Select Picker (Bottom Sheet) ===== */
+    .picker-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 500;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .picker-overlay.show { display: flex; }
+    .picker-sheet {
+      background: #fff;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 0 0 20px 20px;
+      max-height: 65vh;
+      display: flex;
+      flex-direction: column;
+      animation: sheetDown2 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .picker-overlay.hide .picker-sheet { animation: sheetUp2 0.25s ease forwards; }
+    @keyframes sheetDown2 { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+    @keyframes sheetUp2 { from { transform: translateY(0); } to { transform: translateY(-100%); } }
+    .picker-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .picker-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .picker-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .picker-list {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px 0;
+      flex: 1;
+    }
+    .picker-item {
+      padding: 14px 24px;
+      font-size: 0.9rem;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+    .picker-item:active { background: var(--bg); }
+    .picker-item.selected {
+      color: var(--primary);
+      font-weight: 600;
+      background: var(--primary-bg);
+    }
+    .picker-item.selected::after {
+      content: '';
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .radio-pill-group {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .radio-pill:has(input:checked) {
+      background: var(--primary);
+      color: #fff !important;
+      font-weight: 600;
+    }
+    .picker-trigger {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      padding-right: 24px;
+    }
+
+    /* ===== Stats Row ===== */
+    .stats { display: flex; gap: 10px; margin-bottom: 6px; }
+    .stat-card {
+      flex: 1;
+      background: var(--card);
+      border-radius: 8px;
+      padding: 6px 10px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .stat-num { font-size: 1.05rem; font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: 0.65rem; color: var(--text3); margin-top: 1px; }
+
+    /* ===== Report ===== */
+    .report-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      gap: 8px;
+    }
+    .report-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="hd">
+    <div class="hd-title"><span class="hd-main">海康机器人RCS拓展工具</span> <span class="hd-tag">移动端-sclq20260725</span></div>
+  </div>
+
+  <!-- ==================== 站点监控 ==================== -->
+  <div class="page active" id="pageSite">
+    <div class="card" style="margin-bottom:6px;padding:10px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div id="mSiteFilterBadge" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="mSiteFilterLabel" style="font-size:0.75rem;color:var(--text2);">全部显示</span>
+          <b id="mSiteFiltered" style="font-size:1rem;font-weight:800;color:#059669;">-</b>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;background:var(--primary-bg);padding:4px 10px;border-radius:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span style="font-size:0.75rem;color:var(--text2);">总站点</span>
+          <b id="mSiteTotal" style="font-size:1rem;font-weight:800;color:#2563eb;">-</b>
+        </div>
+      </div>
+      <div id="mSiteTypeLegend" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;"></div>
+      <select id="mSiteTypeFilter" style="display:none;"><option value="">全部类型</option><option value="1">储位</option><option value="10">工作点</option><option value="22">电梯停靠点</option><option value="53">巷道头</option><option value="54">巷道尾</option><option value="55">缓冲区</option></select>
+    </div>
+    <div class="card" style="margin-bottom:6px;padding:10px 14px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:0.8rem;color:var(--text3);white-space:nowrap;flex-shrink:0;">搜索：</span>
+        <input type="text" class="input-sm" id="mSiteSearch" placeholder="载具编号 / 站点名称 / 站点编号" oninput="mRenderSites()" style="flex:1;" />
+      </div>
+      <div class="field-row" style="margin-top:6px;margin-bottom:0;align-items:flex-end;">
+        <div style="flex:1;"><label class="field-label">地图名称</label><select class="input-sm" id="mSiteMapFilter" onchange="mRenderSites()"><option value="">全部地图</option></select></div>
+        <div style="flex:1;"><label class="field-label">有无载具</label><div class="radio-pill-group"><label class="radio-pill" style="flex:1;text-align:center;padding:7px 0;font-size:0.82rem;cursor:pointer;color:var(--text2);transition:all 0.2s;display:flex;align-items:center;justify-content:center;"><input type="radio" name="mSiteCarrier" value="" checked onchange="mRenderSites()" style="display:none;" />全部</label><label class="radio-pill" style="flex:1;text-align:center;padding:7px 0;font-size:0.82rem;cursor:pointer;color:var(--text2);transition:all 0.2s;border-left:1px solid var(--border);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;"><input type="radio" name="mSiteCarrier" value="has" onchange="mRenderSites()" style="display:none;" />有</label><label class="radio-pill" style="flex:1;text-align:center;padding:7px 0;font-size:0.82rem;cursor:pointer;color:var(--text2);transition:all 0.2s;display:flex;align-items:center;justify-content:center;"><input type="radio" name="mSiteCarrier" value="no" onchange="mRenderSites()" style="display:none;" />无</label></div></div>
+      </div>
+    </div>
+    <div id="mSiteList"><div class="loading">加载中...</div></div>
+  </div>
+
+  <!-- ==================== 任务查询 ==================== -->
+  <div class="page" id="pageTask">
+    <div class="card collapsed">
+      <div class="card-title" onclick="this.parentElement.classList.toggle('collapsed')">任务查询<span class="filter-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>筛选</span></div>
+      <div class="card-body">
+      <div style="margin-bottom:6px;position:relative;">
+        <label class="field-label">时间范围</label>
+        <div onclick="mToggleTaskDatePicker()" style="display:flex;align-items:center;gap:6px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;cursor:pointer;background:var(--card);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="mTaskDateText" style="color:#334155;">今天 00:00 - 23:59</span>
+        </div>
+        <div id="mTaskDatePopup" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:12px;">
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">开始日期</label><input type="date" id="mTaskStartDate" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div>
+            <div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">开始时间</label><input type="time" id="mTaskStartTime" value="00:00" step="1" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">结束日期</label><input type="date" id="mTaskEndDate" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div>
+            <div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">结束时间</label><input type="time" id="mTaskEndTime" value="23:59:59" step="1" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <button onclick="mQuickTaskDate('today')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">今天</button>
+            <button onclick="mQuickTaskDate('week')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">一周</button>
+            <button onclick="mQuickTaskDate('month')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">一月</button>
+            <button onclick="mQuickTaskDate('halfyear')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">半年</button>
+            <button onclick="mConfirmTaskDate()" style="padding:5px 14px;border:none;border-radius:5px;background:var(--primary);color:#fff;font-size:0.78rem;cursor:pointer;font-weight:500;margin-left:auto;">确定</button>
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div><label class="field-label">载具编号</label><input type="text" class="input-sm" id="mTaskCarrier" placeholder="载具编号" /></div>
+        <div><label class="field-label">任务编号</label><input type="text" class="input-sm" id="mTaskCode" placeholder="任务链编号" /></div>
+      </div>
+      <div class="field-row">
+        <div><label class="field-label">设备编号</label><input type="text" class="input-sm" id="mTaskAmr" placeholder="AGV设备编号" /></div>
+        <div><label class="field-label">任务状态</label><select class="input-sm" id="mTaskStatus"><option value="">全部</option><option value="0">未执行</option><option value="1,2">执行中</option><option value="9">已完成</option><option value="5">已取消</option></select></div>
+      </div>
+      <div class="field-row">
+        <div><label class="field-label">起点站点</label><input type="text" class="input-sm" id="mTaskStartSite" placeholder="起点站点名称" /></div>
+        <div><label class="field-label">终点站点</label><input type="text" class="input-sm" id="mTaskEndSite" placeholder="终点站点名称" /></div>
+      </div>
+      </div>
+    </div>
+    <div class="field-row" style="margin-bottom:6px;">
+      <div><label class="field-label">起点地图</label><select class="input-sm" id="mTaskStartMap"><option value="">全部</option></select></div>
+      <div><label class="field-label">终点地图</label><select class="input-sm" id="taskEndMap"><option value="">全部</option></select></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="mSearchTask()">查询</button>
+      <button class="btn btn-outline" onclick="mResetTask()">重置</button>
+    </div>
+    <div id="mTaskList"></div>
+    <div class="pager" id="mTaskPager" style="display:none;"></div>
+  </div>
+
+  <!-- ==================== 任务取消 ==================== -->
+  <div class="page" id="pageCancel">
+    <div class="card collapsed">
+      <div class="card-title" onclick="this.parentElement.classList.toggle('collapsed')">任务查询<span class="filter-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>筛选</span></div>
+      <div class="card-body">
+      <div class="field-row">
+        <div><label class="field-label">载具编号</label><input type="text" class="input-sm" id="mCancelCarrier" placeholder="载具编号" /></div>
+        <div><label class="field-label">任务编号</label><input type="text" class="input-sm" id="mCancelCode" placeholder="任务链编号" /></div>
+      </div>
+      <div class="field-row">
+        <div><label class="field-label">设备编号</label><input type="text" class="input-sm" id="mCancelAmr" placeholder="AGV设备编号" /></div>
+        <div><label class="field-label">任务状态</label><select class="input-sm" id="mCancelStatus"><option value="1,2">执行中</option></select></div>
+      </div>
+      <div class="field-row">
+        <div><label class="field-label">起点站点</label><input type="text" class="input-sm" id="mCancelStartSite" placeholder="起点站点名称" /></div>
+        <div><label class="field-label">终点站点</label><input type="text" class="input-sm" id="mCancelEndSite" placeholder="终点站点名称" /></div>
+      </div>
+      </div>
+    </div>
+    <div class="field-row" style="margin-bottom:6px;">
+      <div><label class="field-label">起点地图</label><select class="input-sm" id="mCancelStartMap"><option value="">全部</option></select></div>
+      <div><label class="field-label">终点地图</label><select class="input-sm" id="mCancelEndMap"><option value="">全部</option></select></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="mSearchCancel()">查询</button>
+      <button class="btn btn-outline" onclick="mResetCancel()">重置</button>
+    </div>
+    <div style="padding:4px 0 10px;font-size:0.78rem;color:var(--primary);font-weight:600;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      有设备编号=AGV执行中 · <span style="color:#f87171;">无设备编号=排队中</span>
+    </div>
+    <div id="mCancelList"></div>
+    <div class="pager" id="mCancelPager" style="display:none;"></div>
+    <div style="padding:4px 0;">
+      <button class="btn btn-danger" id="mBatchCancelBtn" style="display:none;" onclick="mBatchCancel()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        批量取消 (<span id="mBatchCancelCount">0</span>)
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== 告警查询 ==================== -->
+  <div class="page" id="pageAlarm">
+    <div class="card collapsed">
+      <div class="card-title" onclick="this.parentElement.classList.toggle('collapsed')">告警查询<span class="filter-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>筛选</span></div>
+      <div class="card-body">
+      <div style="margin-bottom:6px;position:relative;">
+        <label class="field-label">时间范围</label>
+        <div onclick="mToggleAlarmDatePicker()" style="display:flex;align-items:center;gap:6px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;cursor:pointer;background:var(--card);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="mAlarmDateText" style="color:#334155;"></span>
+        </div>
+        <div id="mAlarmDatePopup" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:12px;">
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">开始日期</label><input type="date" id="mAlarmStartDate" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div>
+            <div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">开始时间</label><input type="time" id="mAlarmStartTime" value="00:00" step="1" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">结束日期</label><input type="date" id="mAlarmEndDate" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div>
+            <div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">结束时间</label><input type="time" id="mAlarmEndTime" value="23:59:59" step="1" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <button onclick="mQuickAlarmDate('today')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">今天</button>
+            <button onclick="mQuickAlarmDate('week')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">一周</button>
+            <button onclick="mQuickAlarmDate('month')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">一月</button>
+            <button onclick="mQuickAlarmDate('halfyear')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">半年</button>
+            <button onclick="mConfirmAlarmDate()" style="padding:5px 14px;border:none;border-radius:5px;background:var(--primary);color:#fff;font-size:0.78rem;cursor:pointer;font-weight:500;margin-left:auto;">确定</button>
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div><label class="field-label">设备编号</label><input type="text" class="input-sm" id="mAlarmDevice" placeholder="AGV设备编号" /></div>
+        <div><label class="field-label">告警等级</label><select class="input-sm" id="mAlarmLevel"><option value="">全部</option><option value="1">低</option><option value="2">中</option><option value="3">严重</option></select></div>
+      </div>
+      <div class="field-row">
+        <div><label class="field-label">告警区域</label><select class="input-sm" id="mAlarmArea"><option value="">全部</option></select></div>
+        <div><label class="field-label">告警内容</label><input type="text" class="input-sm" id="mAlarmContent" placeholder="告警关键词" /></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="mSearchAlarm()">查询</button>
+        <button class="btn btn-outline" onclick="mResetAlarm()">重置</button>
+      </div>
+      </div>
+    </div>
+    <div id="mAlarmList"></div>
+    <div class="pager" id="mAlarmPager" style="display:none;"></div>
+  </div>
+
+  <!-- ==================== 报表 ==================== -->
+  <div class="page" id="pageReport">
+    <div class="card">
+      <div class="card-title">报表查询</div>
+      <div style="margin-bottom:6px;position:relative;">
+        <label class="field-label">时间范围</label>
+        <div onclick="mToggleReportDatePicker()" style="display:flex;align-items:center;gap:6px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;cursor:pointer;background:var(--card);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="mReportDateText" style="color:#334155;"></span>
+        </div>
+        <div id="mReportDatePopup" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:12px;min-width:320px;">
+          <div style="display:flex;gap:8px;margin-bottom:8px;"><div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">开始日期</label><input type="date" id="mReportStartDate" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div><div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">开始时间</label><input type="time" id="mReportStartTime" value="00:00" step="1" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div></div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;"><div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">结束日期</label><input type="date" id="mReportEndDate" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div><div style="flex:1;"><label style="font-size:0.72rem;color:var(--text3);display:block;margin-bottom:2px;">结束时间</label><input type="time" id="mReportEndTime" value="23:59:59" step="1" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;" /></div></div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;"><button onclick="mQuickReportDate('today')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">今天</button><button onclick="mQuickReportDate('week')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">一周</button><button onclick="mQuickReportDate('month')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">一月</button><button onclick="mQuickReportDate('halfyear')" style="padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:0.78rem;cursor:pointer;color:var(--text2);">半年</button><button onclick="mConfirmReportDate()" style="padding:5px 14px;border:none;border-radius:5px;background:var(--primary);color:#fff;font-size:0.78rem;cursor:pointer;font-weight:500;margin-left:auto;">确定</button></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:0;align-items:flex-end;">
+        <div style="flex:4;"><label class="field-label" style="font-size:0.85rem;">起点地图</label><select class="input-sm" id="mReportMapCode" style="width:100%;margin:0;padding:8px 8px;"><option value="">全部</option></select></div>
+        <div style="flex:6;"><label class="field-label" style="font-size:0.85rem;">&nbsp;</label><button class="btn btn-primary" onclick="mLoadReport()" style="width:100%;margin:0;padding:8px 16px;">查询报表</button></div>
+      </div>
+    </div>
+    <div id="mReportContent"></div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="nav">
+    <a class="nav-item active" onclick="mSwitch('pageSite', this)">
+      站点查询
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12a10 10 0 0 1 20 0"/><path d="M6 12a6 6 0 0 1 12 0"/><circle cx="12" cy="12" r="2"/></svg>
+    </a>
+    <a class="nav-item" onclick="mSwitch('pageTask', this)">
+      任务查询
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 11l3 3L22 4"/></svg>
+    </a>
+    <a class="nav-item" onclick="mSwitch('pageCancel', this)">
+      取消任务
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </a>
+    <a class="nav-item" onclick="mSwitch('pageAlarm', this)">
+      告警查询
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </a>
+    <a class="nav-item" onclick="mSwitch('pageReport', this)">
+      统计报表
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </a>
+  </nav>
+
+  <!-- Custom Select Picker -->
+  <div class="picker-overlay" id="mPickerOverlay" onclick="mClosePicker(event)">
+    <div class="picker-sheet">
+      <div class="picker-header">
+        <span class="picker-title" id="mPickerTitle">选择</span>
+        <button class="picker-close" onclick="mClosePicker()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="picker-list" id="mPickerList"></div>
+    </div>
+  </div>
+
+  <!-- Dialog -->
+  <div class="dlg-overlay" id="mDlg">
+    <div class="dlg-box">
+      <div class="dlg-icon" id="mDlgIcon" style="background:#fef3c7;"></div>
+      <div class="dlg-title" id="mDlgTitle">确认</div>
+      <div class="dlg-msg" id="mDlgMsg">确定要执行此操作吗？</div>
+      <div class="dlg-btns">
+        <button class="btn btn-outline" onclick="mDlgClose()">取消</button>
+        <button class="btn btn-primary" id="mDlgOk" onclick="mDlgOk()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="mToast"></div>
+
+  <script>
+    // ====== Toast ======
+    function mToast(msg, type) {
+      var el = document.getElementById('mToast');
+      el.textContent = msg;
+      el.className = 'toast toast-' + (type || 'info');
+      el.classList.add('show');
+      setTimeout(function() { el.classList.remove('show'); }, 2200);
+    }
+
+    // ====== Dialog ======
+    var mDlgCb = null;
+    function mDialog(title, msg, callback, iconColor) {
+      document.getElementById('mDlgTitle').textContent = title;
+      document.getElementById('mDlgMsg').textContent = msg;
+      document.getElementById('mDlgIcon').style.background = iconColor || '#fef3c7';
+      mDlgCb = callback;
+      document.getElementById('mDlg').classList.add('show');
+    }
+    function mDlgOk() { document.getElementById('mDlg').classList.remove('show'); if (mDlgCb) mDlgCb(); mDlgCb = null; }
+    function mDlgClose() { document.getElementById('mDlg').classList.remove('show'); mDlgCb = null; }
+
+    // ====== Custom Select Picker ======
+    var mPickerSelect = null;
+    var mPickerLabelMap = {
+      'mTaskStatus': '任务状态',
+      'mTaskStartMap': '起点地图',
+      'taskEndMap': '终点地图',
+      'mCancelStatus': '任务状态',
+      'mCancelStartMap': '起点地图',
+      'mCancelEndMap': '终点地图',
+      'mAlarmLevel': '告警等级',
+      'mAlarmArea': '告警区域',
+      'mReportMapCode': '起点地图',
+      'mSiteMapFilter': '地图名称',
+      'mSiteTypeFilter': '点位类型',
+      'mSiteCarrierFilter': '有无载具'
+    };
+
+    var mPickerTypeIcons = {
+      '1': '<svg viewBox="0 0 48 48" width="18" height="18"><rect x="6" y="6" width="36" height="36" rx="4" fill="none" stroke="#165DFF" stroke-width="2.8"/></svg>',
+      '10': '<svg viewBox="0 0 48 48" width="18" height="18"><rect width="48" height="48" rx="6" fill="#9483E8"/><rect x="11" y="12" width="26" height="18" rx="2" fill="none" stroke="#FFFFFF" stroke-width="2.8"/><line x1="18" y1="35" x2="30" y2="35" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round"/></svg>',
+      '22': '<svg viewBox="0 0 48 48" width="18" height="18"><rect width="48" height="48" rx="6" fill="#673AB7"/><rect x="8" y="8" width="32" height="32" rx="0" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="8" x2="24" y2="40" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><polygon points="16,29 11,19 21,19" fill="#FFFFFF"/><polygon points="32,19 27,29 37,29" fill="#FFFFFF"/></svg>',
+      '53': '<svg viewBox="0 0 48 48" width="18" height="18"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><path d="M 24 17 L 18 25 L 21 25 L 21 29 L 27 29 L 27 25 L 30 25 Z" fill="#FFFFFF"/></svg>',
+      '54': '<svg viewBox="0 0 48 48" width="18" height="18"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><path d="M 24 31 L 18 23 L 21 23 L 21 19 L 27 19 L 27 23 L 30 23 Z" fill="#FFFFFF"/></svg>',
+      '55': '<svg viewBox="0 0 48 48" width="18" height="18"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><rect x="16.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="22.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="16.5" y="24.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="24.5" width="3" height="3" fill="#FFFFFF"/><rect x="16.5" y="30.5" width="3" height="3" fill="#FFFFFF"/><rect x="22.5" y="30.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="30.5" width="3" height="3" fill="#FFFFFF"/></svg>'
+    };
+
+    function mShowPicker(selEl) {
+      mPickerSelect = selEl;
+      var title = mPickerLabelMap[selEl.id] || '请选择';
+      document.getElementById('mPickerTitle').textContent = title;
+      var list = document.getElementById('mPickerList');
+      list.innerHTML = '';
+      var opts = selEl.options;
+      var showIcons = selEl.id === 'mSiteTypeFilter';
+      for (var i = 0; i < opts.length; i++) {
+        var item = document.createElement('div');
+        item.className = 'picker-item' + (opts[i].selected ? ' selected' : '');
+        var iconHtml = showIcons && mPickerTypeIcons[opts[i].value] ? mPickerTypeIcons[opts[i].value] : '';
+        item.innerHTML = iconHtml + '<span>' + opts[i].textContent + '</span>';
+        item.setAttribute('data-val', opts[i].value);
+        item.setAttribute('data-idx', i);
+        item.onclick = (function(idx) {
+          return function() {
+            selEl.selectedIndex = idx;
+            selEl.dispatchEvent(new Event('change'));
+            mClosePicker();
+          };
+        })(i);
+        list.appendChild(item);
+      }
+      document.getElementById('mPickerOverlay').classList.add('show');
+    }
+
+    function mClosePicker(e) {
+      if (e && e.target !== e.currentTarget && !e.target.classList.contains('picker-close')) return;
+      var overlay = document.getElementById('mPickerOverlay');
+      overlay.classList.add('hide');
+      setTimeout(function() {
+        overlay.classList.remove('show', 'hide');
+        mPickerSelect = null;
+      }, 260);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('select.input-sm').forEach(function(sel) {
+        sel.style.display = 'none';
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position:relative;width:100%;';
+        sel.parentNode.insertBefore(wrapper, sel);
+        wrapper.appendChild(sel);
+        var btn = document.createElement('div');
+        btn.className = 'input-sm picker-trigger';
+        btn.innerHTML = '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : '请选择') + '</span>';
+        btn.onclick = function() { mShowPicker(sel); };
+        wrapper.appendChild(btn);
+        sel._pickerBtn = btn;
+        var observer = new MutationObserver(function() {
+          btn.querySelector('span').textContent = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : '请选择';
+        });
+        observer.observe(sel, { attributes: true, childList: true, subtree: true });
+        sel.addEventListener('change', function() {
+          btn.querySelector('span').textContent = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : '请选择';
+        });
+      });
+      document.querySelectorAll('input.input-sm[type="text"]').forEach(function(inp) {
+        var parent = inp.parentNode;
+        var wrap = document.createElement('div');
+        wrap.className = 'input-wrap';
+        parent.insertBefore(wrap, inp);
+        wrap.appendChild(inp);
+        var clear = document.createElement('div');
+        clear.className = 'input-clear';
+        clear.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        wrap.appendChild(clear);
+        function updateClear() {
+          if (inp.value.length > 0) { clear.classList.add('has-value'); } else { clear.classList.remove('has-value'); }
+        }
+        clear.addEventListener('mousedown', function(e) { e.preventDefault(); inp.value = ''; updateClear(); inp.dispatchEvent(new Event('input')); inp.focus(); });
+        inp.addEventListener('input', updateClear);
+        inp.addEventListener('change', updateClear);
+        updateClear();
+      });
+    });
+
+    // ====== Page Switch ======
+    var mCurrentPage = 'pageSite';
+    var mPageLoaded = {};
+    function mSwitch(id, el) {
+      document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+      document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+      document.getElementById(id).classList.add('active');
+      el.classList.add('active');
+      mCurrentPage = id;
+      document.getElementById('mTaskDatePopup').style.display = 'none';
+      document.getElementById('mAlarmDatePopup').style.display = 'none';
+      document.getElementById('mReportDatePopup').style.display = 'none';
+      if (id !== 'pageReport') { if (mChart1) mChart1.destroy(); if (mChart2) mChart2.destroy(); if (mChart3) mChart3.destroy(); if (mChart4) mChart4.destroy(); mChart1 = mChart2 = mChart3 = mChart4 = null; }
+      if (id === 'pageReport') {
+        mLoadReport();
+      } else if (id === 'pageSite') {
+        mLoadSites();
+      } else if (id === 'pageTask') {
+        mSearchTask();
+      } else if (id === 'pageCancel') {
+        mSearchCancel();
+      } else if (id === 'pageAlarm') {
+        mSearchAlarm();
+      }
+    }
+
+    // ====== Escape HTML ======
+    function esc(v) { return String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    // ====== Site Monitor ======
+    var mSiteData = [];
+
+    async function mLoadSites() {
+      document.getElementById('mSiteList').innerHTML = '<div class="loading">加载中...</div>';
+      try {
+        var r1 = await fetch('/api/agv/site-codes');
+        var j1 = await r1.json();
+        mSiteData = j1.data || [];
+        try {
+          var r2 = await fetch('/api/agv/site-status');
+          var j2 = await r2.json();
+          var statusMap = {};
+          (j2.data || []).forEach(function(s) { statusMap[s.site_code] = { carrier_code: s.carrier_code || '', carrier_type: s.carrier_type || '' }; });
+          mSiteData.forEach(function(s) { var st = statusMap[s.site_code] || {}; s.carrier_code = st.carrier_code || ''; s.carrier_type = st.carrier_type || ''; });
+        } catch(e) {}
+        document.getElementById('mSiteTotal').textContent = mSiteData.length;
+        var mapSet = {};
+        mSiteData.forEach(function(s) { if (s.map_name && !mapSet[s.map_name]) { mapSet[s.map_name] = s.map_code || ''; } });
+        var mapSel = document.getElementById('mSiteMapFilter');
+        mapSel.innerHTML = '<option value="">全部地图</option>';
+        Object.keys(mapSet).sort().forEach(function(name) {
+          var opt = document.createElement('option');
+          opt.value = name;
+          var code = mapSet[name];
+          opt.textContent = code ? name + '（' + code + '）' : name;
+          mapSel.appendChild(opt);
+        });
+        mRenderSites();
+      } catch(e) {
+        document.getElementById('mSiteList').innerHTML = '<div class="empty">加载失败</div>';
+        mRenderTypeLegend([]);
+      }
+    }
+
+    function mSiteTypeIcon(type) {
+      var icons = {
+        '1': '<svg viewBox="0 0 48 48" width="28" height="28"><rect x="10" y="10" width="28" height="28" rx="3" fill="none" stroke="#165DFF" stroke-width="2.8"/></svg>',
+        '10': '<svg viewBox="0 0 48 48" width="28" height="28"><rect width="48" height="48" rx="6" fill="#9483E8"/><rect x="11" y="12" width="26" height="18" rx="2" fill="none" stroke="#FFFFFF" stroke-width="2.8"/><line x1="18" y1="35" x2="30" y2="35" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round"/></svg>',
+        '22': '<svg viewBox="0 0 48 48" width="28" height="28"><rect width="48" height="48" rx="6" fill="#673AB7"/><rect x="8" y="8" width="32" height="32" rx="0" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="8" x2="24" y2="40" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><polygon points="16,29 11,19 21,19" fill="#FFFFFF"/><polygon points="32,19 27,29 37,29" fill="#FFFFFF"/></svg>',
+        '53': '<svg viewBox="0 0 48 48" width="28" height="28"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><path d="M 24 17 L 18 25 L 21 25 L 21 29 L 27 29 L 27 25 L 30 25 Z" fill="#FFFFFF"/></svg>',
+        '54': '<svg viewBox="0 0 48 48" width="28" height="28"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><path d="M 24 31 L 18 23 L 21 23 L 21 19 L 27 19 L 27 23 L 30 23 Z" fill="#FFFFFF"/></svg>',
+        '55': '<svg viewBox="0 0 48 48" width="28" height="28"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><rect x="16.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="22.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="16.5" y="24.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="24.5" width="3" height="3" fill="#FFFFFF"/><rect x="16.5" y="30.5" width="3" height="3" fill="#FFFFFF"/><rect x="22.5" y="30.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="30.5" width="3" height="3" fill="#FFFFFF"/></svg>'
+      };
+      return icons[type] || icons['1'];
+    }
+
+    var mTypeLegendIcons = {
+      '1': '<svg viewBox="0 0 48 48" width="24" height="24"><rect x="10" y="10" width="28" height="28" rx="3" fill="none" stroke="#165DFF" stroke-width="2.8"/></svg>',
+      '10': '<svg viewBox="0 0 48 48" width="24" height="24"><rect width="48" height="48" rx="6" fill="#9483E8"/><rect x="11" y="12" width="26" height="18" rx="2" fill="none" stroke="#FFFFFF" stroke-width="2.8"/><line x1="18" y1="35" x2="30" y2="35" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round"/></svg>',
+      '22': '<svg viewBox="0 0 48 48" width="24" height="24"><rect width="48" height="48" rx="6" fill="#673AB7"/><rect x="8" y="8" width="32" height="32" rx="0" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="8" x2="24" y2="40" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><polygon points="16,29 11,19 21,19" fill="#FFFFFF"/><polygon points="32,19 27,29 37,29" fill="#FFFFFF"/></svg>',
+      '53': '<svg viewBox="0 0 48 48" width="24" height="24"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><path d="M 24 17 L 18 25 L 21 25 L 21 29 L 27 29 L 27 25 L 30 25 Z" fill="#FFFFFF"/></svg>',
+      '54': '<svg viewBox="0 0 48 48" width="24" height="24"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><path d="M 24 31 L 18 23 L 21 23 L 21 19 L 27 19 L 27 23 L 30 23 Z" fill="#FFFFFF"/></svg>',
+      '55': '<svg viewBox="0 0 48 48" width="24" height="24"><rect width="48" height="48" rx="6" fill="#673AB7"/><path d="M 10 36 L 10 22 A 14 14 0 0 1 38 22 L 38 36 L 10 36 Z" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/><rect x="16.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="22.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="18.5" width="3" height="3" fill="#FFFFFF"/><rect x="16.5" y="24.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="24.5" width="3" height="3" fill="#FFFFFF"/><rect x="16.5" y="30.5" width="3" height="3" fill="#FFFFFF"/><rect x="22.5" y="30.5" width="3" height="3" fill="#FFFFFF"/><rect x="28.5" y="30.5" width="3" height="3" fill="#FFFFFF"/></svg>'
+    };
+    var mTypeNames = {'1':'储位','10':'工作点','22':'电梯停靠点','53':'巷道头','54':'巷道尾','55':'缓冲区'};
+
+    function mRenderTypeLegend(data) {
+      var counts = {};
+      data.forEach(function(s) { var t = s.site_type || '1'; counts[t] = (counts[t] || 0) + 1; });
+      var el = document.getElementById('mSiteTypeLegend');
+      var h = '';
+      var currentFilter = document.getElementById('mSiteTypeFilter').value;
+      var badge = document.getElementById('mSiteFilterBadge');
+      var label = document.getElementById('mSiteFilterLabel');
+      if (currentFilter) {
+        badge.style.background = '#ecfdf5';
+        label.textContent = '当前显示';
+      } else {
+        badge.style.background = 'transparent';
+        label.textContent = '全部显示';
+      }
+      ['1','10','22','53','54','55'].forEach(function(t) {
+        var active = currentFilter === t;
+        var bg = active ? '#ecfdf5' : 'var(--bg)';
+        h += '<div onclick="mFilterByType(\'' + t + '\')" style="display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;border-radius:6px;cursor:pointer;transition:all 0.15s;background:' + bg + ';">';
+        h += mTypeLegendIcons[t] || '';
+        h += '<span style="font-size:0.62rem;color:' + (active ? '#059669' : 'var(--text2)') + ';font-weight:' + (active ? '600' : '400') + ';">' + (mTypeNames[t]||t) + '</span>';
+        h += '<span style="font-size:0.68rem;font-weight:700;color:' + (active ? '#059669' : 'var(--text)') + ';">' + (counts[t]||0) + '</span></div>';
+      });
+      el.innerHTML = h;
+    }
+
+    function mFilterByType(type) {
+      var sel = document.getElementById('mSiteTypeFilter');
+      if (sel.value === type) {
+        sel.value = '';
+      } else {
+        sel.value = type;
+      }
+      mRenderSites();
+    }
+
+    function mRenderSites() {
+      var q = (document.getElementById('mSiteSearch').value || '').toLowerCase();
+      var mapFilter = document.getElementById('mSiteMapFilter').value;
+      var typeFilter = document.getElementById('mSiteTypeFilter').value;
+      var carrierFilter = (document.querySelector('input[name="mSiteCarrier"]:checked') || {}).value || '';
+      var f = mSiteData.filter(function(s) {
+        if (typeFilter && s.site_type !== typeFilter) return false;
+        if (carrierFilter) {
+          var hasCarrier = !!(s.carrier_code && String(s.carrier_code).trim());
+          if (carrierFilter === 'has' && !hasCarrier) return false;
+          if (carrierFilter === 'no' && hasCarrier) return false;
+        }
+        if (mapFilter && s.map_name !== mapFilter) return false;
+        if (q && !s.site_code.toLowerCase().includes(q) && !s.site_name.toLowerCase().includes(q) && !(s.carrier_code || '').toLowerCase().includes(q)) return false;
+        return true;
+      });
+      document.getElementById('mSiteFiltered').textContent = f.length;
+      mRenderTypeLegend(f);
+      var el = document.getElementById('mSiteList');
+      if (!f.length) { el.innerHTML = '<div class="empty">未找到匹配站点</div>'; return; }
+      var h = '';
+      for (var i = 0; i < f.length; i++) {
+        var s = f[i];
+        var cc = s.carrier_code || '';
+        var ct = s.carrier_type || '';
+        h += '<div class="site-item">';
+        h += '<div class="site-icon">' + mSiteTypeIcon(s.site_type || '1') + '</div>';
+        h += '<div class="site-body">';
+        h += '<div class="site-top"><span class="site-name">' + esc(s.site_name) + '</span>';
+        h += '<span class="site-carrier">' + (cc ? esc(cc) + (ct ? ' · ' + esc(ct) : '') : '<span style="color:var(--text4)">无载具</span>') + '</span></div>';
+        h += '<div class="site-bottom"><span class="site-code">' + esc(s.site_code) + '</span>';
+        h += '<span class="site-map">' + esc(s.map_name || s.map_code || '') + '</span></div>';
+        h += '</div></div>';
+      }
+      el.innerHTML = h;
+    }
+
+    // ====== Task Query ======
+    var mTaskPg = 1;
+
+    function mToggleTaskDatePicker() {
+      var popup = document.getElementById('mTaskDatePopup');
+      popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function mInitTaskDate() {
+      var now = new Date();
+      var pad = function(n) { return String(n).padStart(2, '0'); };
+      var today = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+      document.getElementById('mTaskStartDate').value = today;
+      document.getElementById('mTaskEndDate').value = today;
+      mUpdateTaskDateText();
+    }
+
+    function mQuickTaskDate(type) {
+      var now = new Date();
+      var pad = function(n) { return String(n).padStart(2, '0'); };
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var start = new Date(today);
+      var end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      if (type === 'week') start.setDate(start.getDate() - 7);
+      else if (type === 'month') start.setMonth(start.getMonth() - 1);
+      else if (type === 'halfyear') start.setMonth(start.getMonth() - 6);
+      document.getElementById('mTaskStartDate').value = start.getFullYear() + '-' + pad(start.getMonth() + 1) + '-' + pad(start.getDate());
+      document.getElementById('mTaskStartTime').value = '00:00';
+      document.getElementById('mTaskEndDate').value = end.getFullYear() + '-' + pad(end.getMonth() + 1) + '-' + pad(end.getDate());
+      document.getElementById('mTaskEndTime').value = '23:59:59';
+      mUpdateTaskDateText();
+    }
+
+    function mConfirmTaskDate() {
+      mUpdateTaskDateText();
+      document.getElementById('mTaskDatePopup').style.display = 'none';
+    }
+
+    function mUpdateTaskDateText() {
+      var sd = document.getElementById('mTaskStartDate').value;
+      var st = document.getElementById('mTaskStartTime').value || '00:00';
+      var ed = document.getElementById('mTaskEndDate').value;
+      var et = document.getElementById('mTaskEndTime').value || '23:59:59';
+      var el = document.getElementById('mTaskDateText');
+      if (el) el.textContent = (sd || '?') + ' ' + st + ' - ' + (ed || '?') + ' ' + et;
+    }
+
+    function mGetTaskDateRange() {
+      var sd = document.getElementById('mTaskStartDate').value;
+      var st = document.getElementById('mTaskStartTime').value || '00:00';
+      var ed = document.getElementById('mTaskEndDate').value;
+      var et = document.getElementById('mTaskEndTime').value || '23:59:59';
+      return { start: sd ? (sd + ' ' + st + ':00') : '', end: ed ? (ed + ' ' + et) : '' };
+    }
+
+    async function mSearchTask(pg) {
+      pg = pg || 1;
+      var el = document.getElementById('mTaskList');
+      el.innerHTML = '<div class="loading">查询中...</div>';
+      var p = new URLSearchParams();
+      var dr = mGetTaskDateRange();
+      var v1 = document.getElementById('mTaskCode').value;
+      var v2 = document.getElementById('mTaskCarrier').value;
+      var v3 = document.getElementById('mTaskStatus').value;
+      var v4 = document.getElementById('mTaskAmr') ? document.getElementById('mTaskAmr').value : '';
+      var v5 = document.getElementById('mTaskStartSite') ? document.getElementById('mTaskStartSite').value : '';
+      var v6 = document.getElementById('mTaskEndSite') ? document.getElementById('mTaskEndSite').value : '';
+      var v7 = document.getElementById('mTaskStartMap') ? document.getElementById('mTaskStartMap').value : '';
+      var v8 = document.getElementById('taskEndMap') ? document.getElementById('taskEndMap').value : '';
+      if (dr.start) p.append('start_time', dr.start);
+      if (dr.end) p.append('end_time', dr.end);
+      if (v1) p.append('task_chain_code', v1);
+      if (v2) p.append('carrier_code', v2);
+      if (v3) p.append('task_status', v3);
+      if (v4) p.append('amr_code', v4);
+      if (v5) p.append('start_route_code', v5);
+      if (v6) p.append('end_route_code', v6);
+      if (v7) p.append('start_map_code', v7);
+      if (v8) p.append('end_map_code', v8);
+      p.append('page', pg);
+      p.append('pageSize', 10);
+      try {
+        var r = await fetch('/api/agv/rcs-tasks?' + p.toString());
+        var j = await r.json();
+        var tp = j.pagination ? j.pagination.total_pages : (j.totalPages || 1);
+        if (j.success) mRenderTasks(j.data || [], j.pagination ? j.pagination.total_count : (j.total || 0), pg, tp);
+        else el.innerHTML = '<div class="empty">查询失败</div>';
+      } catch(e) { el.innerHTML = '<div class="empty">请求失败</div>'; }
+    }
+
+    function mRenderTasks(data, total, pg, tpg) {
+      var el = document.getElementById('mTaskList');
+      var pgEl = document.getElementById('mTaskPager');
+      if (!data.length) { el.innerHTML = '<div class="empty">未查询到任务</div>'; pgEl.style.display = 'none'; return; }
+      var h = '<div style="font-size:0.75rem;color:var(--text4);margin-bottom:10px;">共 ' + total + ' 条</div>';
+      var idx = (pg - 1) * 10;
+      for (var r of data) {
+        idx++;
+        var sv = r.task_status;
+        var st = sv == 9 ? '已完成' : sv == 5 ? '已取消' : sv == 0 ? '未执行' : '执行中';
+        var sc = sv == 9 ? 'badge-success' : sv == 5 ? 'badge-danger' : sv == 0 ? 'badge-gray' : 'badge-info';
+        var has = !!r.amr_code;
+        var sm = r.start_map_name ? ' [' + r.start_map_name + ']' : '';
+        var em = r.end_map_name ? ' [' + r.end_map_name + ']' : '';
+        h += '<div class="task-item ' + (has ? 'has-device' : 'no-device') + '"><span class="seq-num">' + idx + '</span>';
+        h += '<div class="task-head"><span class="task-id">' + esc(r.task_chain_code || '') + '</span><span class="badge ' + sc + '">' + st + '</span></div>';
+        h += '<div class="task-row" style="font-size:0.75rem;gap:12px;"><span class="task-row-value" style="font-size:0.75rem;color:var(--text3);font-family:monospace;">' + esc(r.carrier_code || '-') + '</span><span class="task-row-value" style="font-size:0.75rem;margin-left:auto;color:var(--text3);font-family:monospace;">' + esc(r.create_time ? new Date(r.create_time).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '-') + '</span></div>';
+        h += '<div style="padding:6px 0;font-size:0.85rem;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;border-bottom:2px solid #d1d5db;padding-bottom:6px;"><span style="font-size:0.82rem;font-weight:800;display:flex;align-items:center;gap:4px;"><span style="color:var(--primary);">起点</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span style="color:var(--primary);">终点</span></span><span style="color:var(--danger);font-weight:800;font-size:0.85rem;">' + esc(r.amr_code || '无') + '</span></div><div style="font-weight:600;color:var(--text);line-height:1.4;display:flex;align-items:center;gap:6px;border-bottom:2px solid #d1d5db;padding-bottom:6px;"><span style="color:var(--primary);">' + esc((r.start_route_name || r.start_route_code || '-') + sm) + '</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span style="color:var(--primary);">' + esc((r.end_route_name || r.end_route_code || '-') + em) + '</span></div></div>';
+        h += '</div>';
+      }
+      el.innerHTML = h;
+      mTaskPg = pg;
+      pgEl.style.display = tpg > 1 ? 'flex' : 'none';
+      pgEl.innerHTML = '<button class="pager-btn" ' + (pg <= 1 ? 'disabled' : '') + ' onclick="mSearchTask(' + (pg - 1) + ')">上一页</button><span class="pager-info">' + pg + ' / ' + tpg + '</span><button class="pager-btn" ' + (pg >= tpg ? 'disabled' : '') + ' onclick="mSearchTask(' + (pg + 1) + ')">下一页</button>';
+    }
+
+    function mResetPicker(id) {
+      var sel = document.getElementById(id);
+      if (!sel) return;
+      sel.selectedIndex = 0;
+      sel.dispatchEvent(new Event('change'));
+      if (sel._pickerBtn) {
+        sel._pickerBtn.querySelector('span').textContent = sel.options[0] ? sel.options[0].textContent : '请选择';
+      }
+    }
+
+    function mResetTask() {
+      mInitTaskDate();
+      document.getElementById('mTaskCode').value = '';
+      document.getElementById('mTaskCarrier').value = '';
+      mResetPicker('mTaskStatus');
+      if (document.getElementById('mTaskAmr')) document.getElementById('mTaskAmr').value = '';
+      if (document.getElementById('mTaskStartSite')) document.getElementById('mTaskStartSite').value = '';
+      if (document.getElementById('mTaskEndSite')) document.getElementById('mTaskEndSite').value = '';
+      mResetPicker('mTaskStartMap');
+      mResetPicker('taskEndMap');
+      mSearchTask();
+    }
+
+    // ====== Task Cancel ======
+    var mCancelPg = 1;
+    var mCancelSel = new Set();
+
+    async function mSearchCancel(pg) {
+      pg = pg || 1;
+      var el = document.getElementById('mCancelList');
+      el.innerHTML = '<div class="loading">查询中...</div>';
+      var p = new URLSearchParams();
+      var v1 = document.getElementById('mCancelCode').value;
+      var v2 = document.getElementById('mCancelCarrier').value;
+      var v3 = document.getElementById('mCancelAmr') ? document.getElementById('mCancelAmr').value : '';
+      var v4 = document.getElementById('mCancelStartSite') ? document.getElementById('mCancelStartSite').value : '';
+      var v5 = document.getElementById('mCancelEndSite') ? document.getElementById('mCancelEndSite').value : '';
+      var v6 = document.getElementById('mCancelStartMap') ? document.getElementById('mCancelStartMap').value : '';
+      var v7 = document.getElementById('mCancelEndMap') ? document.getElementById('mCancelEndMap').value : '';
+      if (v1) p.append('task_chain_code', v1);
+      if (v2) p.append('carrier_code', v2);
+      if (v3) p.append('amr_code', v3);
+      if (v4) p.append('start_route_code', v4);
+      if (v5) p.append('end_route_code', v5);
+      if (v6) p.append('start_map_code', v6);
+      if (v7) p.append('end_map_code', v7);
+      p.append('task_status', '1,2');
+      p.append('page', pg);
+      p.append('pageSize', 10);
+      try {
+        var r = await fetch('/api/agv/rcs-tasks?' + p.toString());
+        var j = await r.json();
+        var tp = j.pagination ? j.pagination.total_pages : (j.totalPages || 1);
+        if (j.success) mRenderCancels(j.data || [], j.pagination ? j.pagination.total_count : (j.total || 0), pg, tp);
+        else el.innerHTML = '<div class="empty">查询失败</div>';
+      } catch(e) { el.innerHTML = '<div class="empty">请求失败</div>'; }
+    }
+
+    function mRenderCancels(data, total, pg, tpg) {
+      var el = document.getElementById('mCancelList');
+      var pgEl = document.getElementById('mCancelPager');
+      if (!data.length) { el.innerHTML = '<div class="empty">未查询到执行中的任务</div>'; pgEl.style.display = 'none'; mUpdateCancelBtn(); return; }
+      mCancelSel.clear();
+      var h = '<div style="font-size:0.75rem;color:var(--text4);margin-bottom:10px;">共 ' + total + ' 条</div>';
+      var idx = (pg - 1) * 10;
+      for (var r of data) {
+        idx++;
+        var has = !!r.amr_code;
+        var canC = r.task_status == 1 || r.task_status == '1' || r.task_status == 2 || r.task_status == '2' || r.task_status == 0 || r.task_status == '0';
+        var sm = r.start_map_name ? ' [' + r.start_map_name + ']' : '';
+        var em = r.end_map_name ? ' [' + r.end_map_name + ']' : '';
+        h += '<div class="task-item ' + (has ? 'has-device' : 'no-device') + '" onclick="mClickCancelItem(event, this)" data-code="' + esc(r.task_chain_code) + '"><span class="seq-num">' + idx + '</span>';
+        h += '<div class="task-head">';
+        if (canC) h += '<input type="checkbox" class="cb" value="' + esc(r.task_chain_code) + '" onchange="mToggleCancel(this)" onclick="event.stopPropagation()" />';
+        h += '<span class="task-id">' + esc(r.task_chain_code || '') + '</span>';
+        if (canC) h += '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();mSingleCancel(\'' + esc(r.task_chain_code) + '\')">取消</button>';
+        h += '</div>';
+        h += '<div class="task-row" style="font-size:0.75rem;gap:12px;"><span class="task-row-value" style="font-size:0.75rem;color:var(--text3);font-family:monospace;">' + esc(r.carrier_code || '-') + '</span><span class="task-row-value" style="font-size:0.75rem;margin-left:auto;color:var(--text3);font-family:monospace;">' + esc(r.create_time ? new Date(r.create_time).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '-') + '</span></div>';
+        h += '<div style="padding:6px 0;font-size:0.85rem;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;border-bottom:2px solid #d1d5db;padding-bottom:6px;"><span style="font-size:0.82rem;font-weight:800;display:flex;align-items:center;gap:4px;"><span style="color:var(--primary);">起点</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span style="color:var(--primary);">终点</span></span><span style="color:var(--danger);font-weight:800;font-size:0.85rem;">' + esc(r.amr_code || '无') + '</span></div><div style="font-weight:600;color:var(--text);line-height:1.4;display:flex;align-items:center;gap:6px;border-bottom:2px solid #d1d5db;padding-bottom:6px;"><span style="color:var(--primary);">' + esc((r.start_route_name || r.start_route_code || '-') + sm) + '</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span style="color:var(--primary);">' + esc((r.end_route_name || r.end_route_code || '-') + em) + '</span></div></div>';
+        h += '</div>';
+      }
+      el.innerHTML = h;
+      mCancelPg = pg;
+      pgEl.style.display = tpg > 1 ? 'flex' : 'none';
+      pgEl.innerHTML = '<button class="pager-btn" ' + (pg <= 1 ? 'disabled' : '') + ' onclick="mSearchCancel(' + (pg - 1) + ')">上一页</button><span class="pager-info">' + pg + ' / ' + tpg + '</span><button class="pager-btn" ' + (pg >= tpg ? 'disabled' : '') + ' onclick="mSearchCancel(' + (pg + 1) + ')">下一页</button>';
+      mUpdateCancelBtn();
+    }
+
+    function mToggleCancel(cb) {
+      if (cb.checked) mCancelSel.add(cb.value); else mCancelSel.delete(cb.value);
+      var item = cb.closest('.task-item');
+      if (item) item.classList.toggle('cancel-checked', cb.checked);
+      mUpdateCancelBtn();
+    }
+
+    function mClickCancelItem(e, el) {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+      var cb = el.querySelector('input[type="checkbox"]');
+      if (cb) { cb.checked = !cb.checked; mToggleCancel(cb); }
+    }
+
+    function mUpdateCancelBtn() {
+      var btn = document.getElementById('mBatchCancelBtn');
+      var cnt = mCancelSel.size;
+      btn.style.display = cnt > 0 ? 'block' : 'none';
+      document.getElementById('mBatchCancelCount').textContent = cnt;
+    }
+
+    function mSingleCancel(code) {
+      mDialog('取消任务', '确定要取消任务 ' + code + ' 吗？此操作不可撤销。', async function() {
+        try {
+          var r = await fetch('/api/agv/cancel-task', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({task_chain_code: code}) });
+          var j = await r.json();
+          if (j.success) { mToast('任务已取消', 'success'); mSearchCancel(mCancelPg); }
+          else mToast('取消失败：' + (j.message || ''), 'error');
+        } catch(e) { mToast('请求失败', 'error'); }
+      }, '#fee2e2');
+    }
+
+    function mBatchCancel() {
+      if (!mCancelSel.size) return;
+      var codes = Array.from(mCancelSel);
+      mDialog('批量取消', '确定要取消选中的 ' + codes.length + ' 个任务吗？', async function() {
+        var ok = 0, fail = 0;
+        for (var c of codes) {
+          try {
+            var r = await fetch('/api/agv/cancel-task', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({task_chain_code: c}) });
+            var j = await r.json();
+            if (j.success) ok++; else fail++;
+          } catch(e) { fail++; }
+        }
+        mToast('取消完成：成功 ' + ok + (fail ? '，失败 ' + fail : ''), ok > 0 ? 'success' : 'error');
+        mCancelSel.clear();
+        mSearchCancel(mCancelPg);
+      }, '#fee2e2');
+    }
+
+    function mResetCancel() {
+      document.getElementById('mCancelCode').value = '';
+      document.getElementById('mCancelCarrier').value = '';
+      if (document.getElementById('mCancelAmr')) document.getElementById('mCancelAmr').value = '';
+      if (document.getElementById('mCancelStartSite')) document.getElementById('mCancelStartSite').value = '';
+      if (document.getElementById('mCancelEndSite')) document.getElementById('mCancelEndSite').value = '';
+      mResetPicker('mCancelStartMap');
+      mResetPicker('mCancelEndMap');
+      mCancelSel.clear();
+      mUpdateCancelBtn();
+      mSearchCancel();
+    }
+
+    // ====== Alarm Query ======
+    var mAlarmPg = 1;
+
+    function mToggleAlarmDatePicker() {
+      var popup = document.getElementById('mAlarmDatePopup');
+      popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function mInitAlarmDate() {
+      var now = new Date();
+      var pad = function(n) { return String(n).padStart(2, '0'); };
+      var today = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+      var weekAgo = new Date(now - 7 * 86400000);
+      var weekAgoStr = weekAgo.getFullYear() + '-' + pad(weekAgo.getMonth() + 1) + '-' + pad(weekAgo.getDate());
+      document.getElementById('mAlarmStartDate').value = weekAgoStr;
+      document.getElementById('mAlarmEndDate').value = today;
+      document.getElementById('mAlarmStartTime').value = '00:00';
+      document.getElementById('mAlarmEndTime').value = '23:59:59';
+      mUpdateAlarmDateText();
+    }
+
+    function mQuickAlarmDate(type) {
+      var now = new Date();
+      var pad = function(n) { return String(n).padStart(2, '0'); };
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var start = new Date(today);
+      var end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      if (type === 'week') start.setDate(start.getDate() - 7);
+      else if (type === 'month') start.setMonth(start.getMonth() - 1);
+      else if (type === 'halfyear') start.setMonth(start.getMonth() - 6);
+      document.getElementById('mAlarmStartDate').value = start.getFullYear() + '-' + pad(start.getMonth() + 1) + '-' + pad(start.getDate());
+      document.getElementById('mAlarmStartTime').value = '00:00';
+      document.getElementById('mAlarmEndDate').value = end.getFullYear() + '-' + pad(end.getMonth() + 1) + '-' + pad(end.getDate());
+      document.getElementById('mAlarmEndTime').value = '23:59:59';
+      mUpdateAlarmDateText();
+    }
+
+    function mConfirmAlarmDate() {
+      mUpdateAlarmDateText();
+      document.getElementById('mAlarmDatePopup').style.display = 'none';
+    }
+
+    function mUpdateAlarmDateText() {
+      var sd = document.getElementById('mAlarmStartDate').value;
+      var st = document.getElementById('mAlarmStartTime').value || '00:00';
+      var ed = document.getElementById('mAlarmEndDate').value;
+      var et = document.getElementById('mAlarmEndTime').value || '23:59:59';
+      var el = document.getElementById('mAlarmDateText');
+      if (el) el.textContent = (sd || '?') + ' ' + st + ' - ' + (ed || '?') + ' ' + et;
+    }
+
+    function mGetAlarmDateRange() {
+      var sd = document.getElementById('mAlarmStartDate').value;
+      var st = document.getElementById('mAlarmStartTime').value || '00:00';
+      var ed = document.getElementById('mAlarmEndDate').value;
+      var et = document.getElementById('mAlarmEndTime').value || '23:59:59';
+      return { start: sd ? (sd + ' ' + st + ':00') : '', end: ed ? (ed + ' ' + et) : '' };
+    }
+
+    async function mSearchAlarm(pg) {
+      pg = pg || 1;
+      var el = document.getElementById('mAlarmList');
+      el.innerHTML = '<div class="loading">查询中...</div>';
+      var p = new URLSearchParams();
+      var v1 = document.getElementById('mAlarmDevice').value;
+      var v2 = document.getElementById('mAlarmLevel').value;
+      var v3 = document.getElementById('mAlarmArea') ? document.getElementById('mAlarmArea').value : '';
+      var v4 = document.getElementById('mAlarmContent') ? document.getElementById('mAlarmContent').value : '';
+      var dr = mGetAlarmDateRange();
+      if (v1) p.append('source_code', v1);
+      if (v2) p.append('log_level', v2);
+      if (v3) p.append('elc_map_code', v3);
+      if (v4) p.append('alarm_content', v4);
+      if (dr.start) p.append('begin_date', dr.start);
+      if (dr.end) p.append('end_date', dr.end);
+      p.append('page', pg);
+      p.append('pageSize', 10);
+      try {
+        var r = await fetch('/api/agv/alarm-history?' + p.toString());
+        var j = await r.json();
+        var tp = j.pagination ? j.pagination.total_pages : (j.totalPages || 1);
+        if (j.success) mRenderAlarms(j.data || [], j.pagination ? j.pagination.total_count : (j.total || 0), pg, tp);
+        else el.innerHTML = '<div class="empty">查询失败</div>';
+      } catch(e) { el.innerHTML = '<div class="empty">请求失败</div>'; }
+    }
+
+    function mRenderAlarms(data, total, pg, tpg) {
+      var el = document.getElementById('mAlarmList');
+      var pgEl = document.getElementById('mAlarmPager');
+      if (!data.length) { el.innerHTML = '<div class="empty">未查询到告警记录</div>'; pgEl.style.display = 'none'; return; }
+      var h = '<div style="font-size:0.75rem;color:var(--text4);margin-bottom:10px;">共 ' + total + ' 条</div>';
+      var idx = (pg - 1) * 10;
+      for (var r of data) {
+        idx++;
+        var lv = r.log_level == 3 ? '严重' : r.log_level == 2 ? '中' : '低';
+        var lc = r.log_level == 3 ? 'badge-danger' : r.log_level == 2 ? 'badge-warning' : 'badge-info';
+        var st = r.end_date ? '已恢复' : '告警中';
+        var sc = r.end_date ? 'badge-success' : 'badge-danger';
+        var tm = (r.begin_date || '').replace('T', ' ').substring(0, 16);
+        var contentText = [r.main_type_text, r.minor_type_text].filter(function(t) { return t && t !== '-'; }).join(' - ') || '-';
+        h += '<div class="alarm-item ' + (r.end_date ? 'resolved' : '') + '"><span class="seq-num">' + idx + '</span>';
+        h += '<div class="task-head"><span class="task-row-value">' + esc(r.source_code || '') + '</span><div><span class="badge ' + lc + '">' + lv + '</span> <span class="badge ' + sc + '">' + st + '</span></div></div>';
+        h += '<div class="task-row"><span class="task-row-label">设备</span><span class="task-row-value">' + esc(r.source_code || '-') + '</span></div>';
+        h += '<div class="task-row"><span class="task-row-label">内容</span><span class="task-row-value" style="font-size:0.8rem;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(contentText) + '</span></div>';
+        h += '<div class="task-row"><span class="task-row-label">时间</span><span class="task-row-value">' + tm + '</span></div>';
+        h += '</div>';
+      }
+      el.innerHTML = h;
+      mAlarmPg = pg;
+      pgEl.style.display = tpg > 1 ? 'flex' : 'none';
+      pgEl.innerHTML = '<button class="pager-btn" ' + (pg <= 1 ? 'disabled' : '') + ' onclick="mSearchAlarm(' + (pg - 1) + ')">上一页</button><span class="pager-info">' + pg + ' / ' + tpg + '</span><button class="pager-btn" ' + (pg >= tpg ? 'disabled' : '') + ' onclick="mSearchAlarm(' + (pg + 1) + ')">下一页</button>';
+    }
+
+    function mResetAlarm() {
+      mInitAlarmDate();
+      document.getElementById('mAlarmDevice').value = '';
+      mResetPicker('mAlarmLevel');
+      mResetPicker('mAlarmArea');
+      if (document.getElementById('mAlarmContent')) document.getElementById('mAlarmContent').value = '';
+      mSearchAlarm();
+    }
+
+    // ====== Report ======
+    function mToggleReportDatePicker() {
+      var popup = document.getElementById('mReportDatePopup');
+      popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function mInitReportDate() {
+      var now = new Date();
+      var pad = function(n) { return String(n).padStart(2, '0'); };
+      var today = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+      document.getElementById('mReportStartDate').value = today;
+      document.getElementById('mReportEndDate').value = today;
+      document.getElementById('mReportStartTime').value = '00:00';
+      document.getElementById('mReportEndTime').value = '23:59:59';
+      mUpdateReportDateText();
+    }
+
+    function mQuickReportDate(type) {
+      var now = new Date();
+      var pad = function(n) { return String(n).padStart(2, '0'); };
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var start = new Date(today);
+      var end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      if (type === 'week') start.setDate(start.getDate() - 7);
+      else if (type === 'month') start.setMonth(start.getMonth() - 1);
+      else if (type === 'halfyear') start.setMonth(start.getMonth() - 6);
+      document.getElementById('mReportStartDate').value = start.getFullYear() + '-' + pad(start.getMonth() + 1) + '-' + pad(start.getDate());
+      document.getElementById('mReportStartTime').value = '00:00';
+      document.getElementById('mReportEndDate').value = end.getFullYear() + '-' + pad(end.getMonth() + 1) + '-' + pad(end.getDate());
+      document.getElementById('mReportEndTime').value = '23:59:59';
+      mUpdateReportDateText();
+    }
+
+    function mConfirmReportDate() {
+      mUpdateReportDateText();
+      document.getElementById('mReportDatePopup').style.display = 'none';
+    }
+
+    function mUpdateReportDateText() {
+      var sd = document.getElementById('mReportStartDate').value;
+      var st = document.getElementById('mReportStartTime').value || '00:00';
+      var ed = document.getElementById('mReportEndDate').value;
+      var et = document.getElementById('mReportEndTime').value || '23:59:59';
+      var el = document.getElementById('mReportDateText');
+      if (el) el.textContent = (sd || '?') + ' ' + st + ' - ' + (ed || '?') + ' ' + et;
+    }
+
+    function mGetReportDateRange() {
+      var sd = document.getElementById('mReportStartDate').value;
+      var st = document.getElementById('mReportStartTime').value || '00:00';
+      var ed = document.getElementById('mReportEndDate').value;
+      var et = document.getElementById('mReportEndTime').value || '23:59:59';
+      return { start: sd ? (sd + ' ' + st) : '', end: ed ? (ed + ' ' + et) : '' };
+    }
+
+    var mChart1 = null, mChart2 = null, mChart3 = null, mChart4 = null;
+
+    async function mLoadReport() {
+      var el = document.getElementById('mReportContent');
+      el.innerHTML = '<div class="loading">加载中...</div>';
+      var dr = mGetReportDateRange();
+      try {
+        var p = new URLSearchParams();
+        if (dr.start) p.append('start_date', dr.start);
+        if (dr.end) p.append('end_date', dr.end);
+        var mc = document.getElementById('mReportMapCode').value;
+        if (mc) p.append('map_code', mc);
+        var r = await fetch('/api/agv/daily-task-report?' + p.toString());
+        var j = await r.json();
+        if (!j.success || !j.data) { el.innerHTML = '<div class="empty" style="padding:40px 20px;text-align:center;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin-bottom:12px;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><div style="color:var(--text3);font-size:0.85rem;">暂无数据</div><div style="color:var(--text4);font-size:0.75rem;margin-top:4px;">请调整时间范围后重试</div></div>'; return; }
+        var d = j.data;
+        var hasData = (d.statusDistribution && d.statusDistribution.length > 0) ||
+                      (d.mapTaskCounts && d.mapTaskCounts.length > 0) ||
+                      (d.hourlyTrend && Object.keys(d.hourlyTrend).length > 0);
+        if (!hasData) { el.innerHTML = '<div class="empty" style="padding:40px 20px;text-align:center;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin-bottom:12px;"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg><div style="color:var(--text3);font-size:0.85rem;">该时间范围内暂无任务数据</div><div style="color:var(--text4);font-size:0.75rem;margin-top:4px;">尝试扩大时间范围或切换地图</div></div>'; return; }
+
+        var totalTasks = 0, completedTasks = 0, cancelledTasks = 0;
+        if (d.statusDistribution) {
+          d.statusDistribution.forEach(function(s) {
+            totalTasks += s.count || 0;
+            if (String(s.status) === '9') completedTasks += s.count || 0;
+            if (String(s.status) === '5') cancelledTasks += s.count || 0;
+          });
+        }
+        var completionRate = totalTasks > 0 ? Math.round(completedTasks / totalTasks * 100) : 0;
+
+        var h = '';
+        h += '<div style="display:flex;gap:6px;margin-bottom:8px;">';
+        h += '<div style="flex:1;background:var(--card);border-radius:8px;padding:10px 6px;text-align:center;"><div style="font-size:0.62rem;color:var(--text3);margin-bottom:2px;">总任务</div><div style="font-size:1.1rem;font-weight:800;color:var(--primary);">' + totalTasks + '</div></div>';
+        h += '<div style="flex:1;background:var(--card);border-radius:8px;padding:10px 6px;text-align:center;"><div style="font-size:0.62rem;color:var(--text3);margin-bottom:2px;">已完成</div><div style="font-size:1.1rem;font-weight:800;color:#10b981;">' + completedTasks + '</div></div>';
+        h += '<div style="flex:1;background:var(--card);border-radius:8px;padding:10px 6px;text-align:center;"><div style="font-size:0.62rem;color:var(--text3);margin-bottom:2px;">已取消</div><div style="font-size:1.1rem;font-weight:800;color:#f97316;">' + cancelledTasks + '</div></div>';
+        h += '<div style="flex:1;background:var(--card);border-radius:8px;padding:10px 6px;text-align:center;"><div style="font-size:0.62rem;color:var(--text3);margin-bottom:2px;">完成率</div><div style="font-size:1.1rem;font-weight:800;color:#8b5cf6;">' + completionRate + '%</div></div>';
+        h += '</div>';
+
+        if (d.statusDistribution && d.statusDistribution.length > 0) h += '<div class="card"><div class="card-title">任务状态分布</div><canvas id="mChartPie" style="max-height:220px;"></canvas></div>';
+        if (d.mapTaskCounts && d.mapTaskCounts.length > 0) h += '<div class="card"><div class="card-title">各起点地图任务量</div><canvas id="mChartBar" style="max-height:220px;"></canvas></div>';
+        if (d.hourlyTrend && Object.keys(d.hourlyTrend).length > 0) h += '<div class="card"><div class="card-title">任务量趋势（按小时）</div><canvas id="mChartLine" style="max-height:220px;"></canvas></div>';
+        if (d.carrierStats && d.carrierStats.length > 0) h += '<div class="card"><div class="card-title">设备完成的任务数量对比</div><canvas id="mChartCarrierBar" style="max-height:220px;"></canvas></div>';
+        el.innerHTML = h;
+        setTimeout(function() {
+          if (d.statusDistribution && d.statusDistribution.length > 0) mRenderPie(d.statusDistribution);
+          if (d.mapTaskCounts && d.mapTaskCounts.length > 0) mRenderBar(d.mapTaskCounts);
+          if (d.hourlyTrend && Object.keys(d.hourlyTrend).length > 0) mRenderLine(d.hourlyTrend);
+          if (d.carrierStats && d.carrierStats.length > 0) mRenderCarrierBar(d.carrierStats);
+        }, 50);
+      } catch(e) { el.innerHTML = '<div class="empty" style="padding:40px 20px;text-align:center;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.5" style="margin-bottom:12px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><div style="color:var(--danger);font-size:0.85rem;">请求失败</div><div style="color:var(--text4);font-size:0.75rem;margin-top:4px;">请检查网络后重试</div></div>'; }
+    }
+
+    function mRenderPie(statusData) {
+      try {
+        var ctx = document.getElementById('mChartPie');
+        if (!ctx) return;
+        if (mChart1) mChart1.destroy();
+        var sm = {'0':'待执行','1':'执行中','2':'执行中','5':'已取消','9':'已完成'};
+        var cm = {'0':'#facc15','1':'#2563eb','2':'#2563eb','5':'#f97316','9':'#10b981'};
+        var labels = [], values = [], colors = [];
+        var total = 0;
+        for (var s of statusData) { total += s.count || 0; }
+        for (var s of statusData) {
+          var name = sm[String(s.status)] || '未知';
+          var idx = labels.indexOf(name);
+          if (idx >= 0) { values[idx] += s.count; } else { labels.push(name); values.push(s.count); colors.push(cm[String(s.status)] || '#94a3b8'); }
+        }
+        mChart1 = new Chart(ctx, {
+          type: 'doughnut',
+          data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
+          options: { responsive: true, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10, usePointStyle: true, pointStyleWidth: 10 } }, tooltip: { callbacks: { label: function(c) { var pct = total > 0 ? Math.round(c.raw / total * 100) : 0; return c.label + ': ' + c.raw + ' (' + pct + '%)'; } } } } }
+        });
+      } catch(e) {}
+    }
+
+    function mRenderBar(mapData) {
+      try {
+        var ctx = document.getElementById('mChartBar');
+        if (!ctx) return;
+        if (mChart2) mChart2.destroy();
+        mChart2 = new Chart(ctx, {
+          type: 'bar',
+          data: { labels: mapData.map(function(m) { return m.map_name || m.map_code; }), datasets: [{ label: '任务量', data: mapData.map(function(m) { return m.task_count; }), backgroundColor: '#2563eb', borderRadius: 4, barPercentage: 0.5 }] },
+          options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { afterLabel: function(c) { var m = mapData[c.dataIndex]; return '车辆: ' + (m.vehicle_count || 0) + ' | 车均: ' + (m.avg_per_vehicle || 0); } } } }, scales: { y: { beginAtZero: true } } }
+        });
+      } catch(e) {}
+    }
+
+    function mRenderLine(trendData) {
+      try {
+        var ctx = document.getElementById('mChartLine');
+        if (!ctx) return;
+        if (mChart3) mChart3.destroy();
+        var hours = []; for (var h = 0; h < 24; h++) hours.push(h + ':00');
+        var cs = ['#2563eb','#10b981','#f97316','#8b5cf6','#ec4899','#14b8a6'];
+        var ds = [], i = 0;
+        for (var mn in trendData) {
+          var data = []; for (var h = 0; h < 24; h++) data.push(trendData[mn][h] || 0);
+          ds.push({ label: mn, data: data, borderColor: cs[i % cs.length], backgroundColor: 'transparent', pointBackgroundColor: cs[i % cs.length], tension: 0.3, borderWidth: 2 });
+          i++;
+        }
+        mChart3 = new Chart(ctx, {
+          type: 'line',
+          data: { labels: hours, datasets: ds },
+          options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } } }, scales: { y: { beginAtZero: true, title: { display: true, text: '任务量' } }, x: { ticks: { maxTicksLimit: 12, font: { size: 10 } } } } }
+        });
+      } catch(e) {}
+    }
+
+    function mRenderCarrierBar(carrierData) {
+      try {
+        var ctx = document.getElementById('mChartCarrierBar');
+        if (!ctx) return;
+        if (mChart4) mChart4.destroy();
+        var top = carrierData.slice(0, 15);
+        mChart4 = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: top.map(function(c) { return c.amr_code; }),
+            datasets: [{
+              label: '任务数量',
+              data: top.map(function(c) { return c.task_count; }),
+              backgroundColor: '#2563eb',
+              borderRadius: 4,
+              barPercentage: 0.5
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: function(c) { return '车号: ' + c[0].label; },
+                  label: function(c) { return '任务数: ' + c.raw; }
+                }
+              }
+            },
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: '任务数量' }, ticks: { stepSize: 1 } },
+              x: { title: { display: true, text: '车号' }, ticks: { maxRotation: 45, font: { size: 10 } } }
+            }
+          }
+        });
+      } catch(e) {}
+    }
+
+    // ====== Load Map Codes ======
+    async function mLoadMapCodes() {
+      try {
+        var r = await fetch('/api/agv/site-codes');
+        var j = await r.json();
+        if (j.success && Array.isArray(j.data)) {
+          var set = new Set();
+          j.data.forEach(function(s) {
+            if (s.map_code && !set.has(s.map_code)) {
+              set.add(s.map_code);
+              ['mCancelStartMap', 'mCancelEndMap', 'mTaskStartMap', 'taskEndMap', 'mReportMapCode'].forEach(function(id) {
+                var sel = document.getElementById(id);
+                if (sel) {
+                  var opt = document.createElement('option');
+                  opt.value = s.map_code;
+                  opt.textContent = s.map_name || s.map_code;
+                  sel.appendChild(opt);
+                }
+              });
+            }
+          });
+        }
+      } catch(e) {}
+    }
+
+    // ====== Load Alarm Areas ======
+    async function mLoadAlarmAreas() {
+      try {
+        var r = await fetch('/api/agv/alarm-areas');
+        var j = await r.json();
+        if (j.success && Array.isArray(j.data)) {
+          var sel = document.getElementById('mAlarmArea');
+          if (sel) {
+            j.data.forEach(function(item) {
+              var opt = document.createElement('option');
+              opt.value = item.code;
+              opt.textContent = item.name || item.code;
+              sel.appendChild(opt);
+            });
+          }
+        }
+      } catch(e) {}
+    }
+
+    // ====== Init ======
+    (function() {
+      mInitAlarmDate();
+      mRenderTypeLegend([]);
+      mLoadSites();
+      mLoadMapCodes();
+      mLoadAlarmAreas();
+      mInitTaskDate();
+      mInitReportDate();
+    })();
+  </script>
+</body>
+</html>

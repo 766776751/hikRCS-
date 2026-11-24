@@ -1,0 +1,23 @@
+/**
+ * src-db/db.css — db config page (recreated scoped styles from DbLoginView.vue)
+ */
+.db-login { max-width: 460px; margin: 0 auto; text-align: center; }
+.dl-icon {
+  width: 60px; height: 60px; border-radius: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--brand-50), var(--brand-100));
+  color: var(--brand-600); margin-bottom: 14px;
+}
+.dl-title { font-size: 1.2rem; font-weight: 800; margin: 0; }
+.dl-sub { font-size: 0.82rem; color: var(--ink-400); margin: 6px 0 20px; }
+.dl-form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+.dl-row { display: flex; gap: 12px; }
+.dl-row .field { flex: 1; }
+.dl-msg {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 10px; font-size: 0.84rem;
+}
+.dl-msg.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.dl-msg.err { background: var(--err-bg); color: var(--err-ink); }
+.dl-actions { display: flex; gap: 10px; margin-top: 4px; }
+.dl-actions .btn { flex: 1; }

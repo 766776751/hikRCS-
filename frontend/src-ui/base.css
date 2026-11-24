@@ -1,0 +1,187 @@
+/**
+ * ============================================================================
+ * src-ui/base.css — 设计系统基础层（ui- 前缀，全部自包含）
+ * ----------------------------------------------------------------------------
+ * 依据 docs/DESIGN-SPEC.md 第三/五/七章。所有类名 ui- 前缀，不依赖旧 Vue base.css。
+ *
+ * 铁律速查（详见 DESIGN-SPEC 第二章）：
+ *   1. 图标+多行文字 → 只用 Grid 布局
+ *   2. 图标尺寸三档白名单：卡片 26 / 表格 16 / 图例 20（width/height 属性双重锁定）
+ *   3. 文本截断三件套必须配 min-width:0
+ *   4. 发光按钮文字必须近黑，:active/:focus-visible 锁黑
+ * ============================================================================
+ */
+
+@import './tokens.css';
+
+/* ---------- 根容器 ---------- */
+.ui-root {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  color: var(--ui-ink-900);
+}
+.ui-root *,
+.ui-root *::before,
+.ui-root *::after { box-sizing: border-box; }
+
+.ui-root svg { display: inline-block; vertical-align: -0.14em; flex: none; }
+
+/* ---------- 按钮（SPEC 第三章 12 变体中的基础子集） ---------- */
+.ui-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 36px; padding: 0 16px;
+  border-radius: var(--ui-r-ctrl); border: none;
+  font-size: var(--ui-fs-14); font-weight: 600; font-family: inherit;
+  cursor: pointer; white-space: nowrap;
+  transition: filter var(--ui-dur-fast) var(--ui-ease),
+              transform var(--ui-dur-fast) var(--ui-ease),
+              box-shadow var(--ui-dur-base) var(--ui-ease),
+              background var(--ui-dur-base) var(--ui-ease);
+}
+.ui-btn:active { transform: scale(.97); }
+.ui-btn:disabled { opacity: .5; cursor: not-allowed; }
+.ui-btn:focus-visible { outline: 2px solid var(--ui-brand-400); outline-offset: 2px; }
+
+/* 主按钮 */
+.ui-btn--primary { background: var(--ui-brand-500); color: #fff; }
+.ui-btn--primary:hover:not(:disabled) { background: var(--ui-brand-400); }
+
+/* 次按钮 */
+.ui-btn--secondary { background: var(--ui-surface); color: var(--ui-ink-700);
+  border: 1px solid var(--ui-line-soft); }
+.ui-btn--secondary:hover:not(:disabled) { border-color: var(--ui-brand-400); color: var(--ui-brand-600); }
+
+/* 幽灵按钮 */
+.ui-btn--ghost { background: transparent; color: var(--ui-ink-700); }
+.ui-btn--ghost:hover:not(:disabled) { background: rgba(15, 23, 42, 0.06); }
+
+/* 发光按钮（SPEC 5 号：深底场景，文字铁律近黑） */
+.ui-btn--glow {
+  background: #fff; color: var(--ui-ink-900);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 rgba(59, 130, 246, 0.4);
+  transition: box-shadow var(--ui-dur-base) var(--ui-ease),
+              transform var(--ui-dur-base) var(--ui-ease);
+}
+.ui-btn--glow:hover { transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.55), 0 6px 18px rgba(4, 12, 34, 0.22); }
+.ui-btn--glow:active { transform: translateY(0) scale(.98);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+.ui-btn--glow:focus-visible { color: var(--ui-ink-900); } /* 锁黑防白字 */
+
+/* 渐变按钮（SPEC 6 号：hero 快捷入口） */
+.ui-btn--gradient {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background-size: 200% 200%; color: #fff;
+  transition: background-position .4s var(--ui-ease), transform var(--ui-dur-base) var(--ui-ease);
+}
+.ui-btn--gradient:hover { background-position: 100% 0; transform: translateY(-2px); }
+
+/* 3D 物理按压（SPEC 7 号） */
+.ui-btn--push { background: var(--ui-brand-500); color: #fff;
+  box-shadow: 0 4px 0 var(--ui-brand-700);
+  transition: transform var(--ui-dur-fast) var(--ui-ease),
+              box-shadow var(--ui-dur-fast) var(--ui-ease); }
+.ui-btn--push:active { transform: translateY(4px); box-shadow: 0 0 0 var(--ui-brand-700); }
+
+/* 幽灵-暗底变体（深蓝 hero 上用） */
+.ui-btn--glass {
+  background: rgba(255, 255, 255, 0.14); color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+.ui-btn--glass:hover { background: rgba(255, 255, 255, 0.24); }
+
+/* 尺寸 */
+.ui-btn--sm { height: 28px; padding: 0 10px; font-size: var(--ui-fs-13); }
+
+/* ---------- 骨架屏（SPEC 5.2 第 3 种 loader） ---------- */
+.ui-skeleton {
+  background: linear-gradient(90deg, #eef1f5 25%, #f7f9fb 50%, #eef1f5 75%);
+  background-size: 200% 100%;
+  animation: ui-shimmer 1.2s infinite;
+  border-radius: var(--ui-r-ctrl);
+}
+@keyframes ui-shimmer { to { background-position: -200% 0; } }
+
+/* ---------- 在线脉冲点 ---------- */
+.ui-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--ui-ok);
+  animation: ui-pulse 1.6s var(--ui-ease) infinite; }
+@keyframes ui-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+  100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+}
+
+/* ---------- 弹窗（SPEC 7.5：fit 收缩、玻璃遮罩、back-out 入场） ---------- */
+.ui-mask {
+  position: fixed; inset: 0;
+  /* 3600: above Vue shell module dialog (.mask z-2000) and picker sheet (3400),
+     below daterange popup (4000) so date pickers stay clickable inside modals */
+  z-index: 3600;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  animation: ui-fade var(--ui-dur-slow) var(--ui-ease);
+}
+.ui-modal {
+  background: var(--ui-surface); border-radius: var(--ui-r-modal);
+  box-shadow: var(--ui-shadow-lg); width: calc(100vw - 32px);
+  max-width: 520px; max-height: 86vh; overflow: auto;
+  animation: ui-pop var(--ui-dur-slow) var(--ui-ease-back);
+}
+.ui-modal--fit { width: fit-content; min-width: 320px; }
+.ui-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--ui-line-soft);
+}
+.ui-modal-title { display: flex; align-items: center; gap: 8px;
+  font-size: var(--ui-fs-16); font-weight: 700; }
+.ui-modal-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border: none; border-radius: var(--ui-r-ctrl);
+  background: transparent; color: var(--ui-ink-500); cursor: pointer;
+  transition: background var(--ui-dur-fast) var(--ui-ease);
+}
+.ui-modal-close:hover { background: rgba(15, 23, 42, 0.06); color: var(--ui-ink-900); }
+.ui-modal-body { padding: 16px 18px; }
+@keyframes ui-fade { from { opacity: 0; } }
+@keyframes ui-pop { from { opacity: 0; transform: scale(.96) translateY(8px); } }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+
+/* ---------- 统计卡 stat-card（SPEC 4.4） ---------- */
+.ui-kpi {
+  position: relative; overflow: hidden;
+  background: var(--ui-surface); border: 1px solid var(--ui-line-soft);
+  border-radius: var(--ui-r-card); box-shadow: var(--ui-shadow-sm);
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
+}
+.ui-kpi::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--kpi-accent, var(--ui-brand-500));
+}
+.ui-kpi__label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: var(--ui-fs-13); color: var(--ui-ink-500); font-weight: 600;
+}
+.ui-kpi__label svg { color: var(--kpi-accent, var(--ui-brand-500)); }
+.ui-kpi__value {
+  font-size: var(--ui-fs-28); font-weight: 700; line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.ui-kpi__skel { height: 30px; width: 72px; }
+/* hero 玻璃变体（深蓝底上） */
+.ui-kpi--hero {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: none;
+}
+.ui-kpi--hero .ui-kpi__label { color: rgba(219, 234, 254, 0.85); }
+.ui-kpi--hero .ui-kpi__value { color: #fff; }
+
+/* ---------- 减少动画偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ui-root *, .ui-root *::before, .ui-root *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
