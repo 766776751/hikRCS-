@@ -1,0 +1,51 @@
+# ============ 依赖 ============
+node_modules/
+**/node_modules/
+
+# ============ 前端构建产物 ============
+dist/
+**/dist/
+dist.bak-*/
+**.bak-*/
+
+# ============ 打包产物（大文件）============
+*.exe
+*.tar.gz
+*.blockmap
+rcsbox-desktop/dist-installer*/
+rcsbox-desktop/release/
+
+# ============ 运行时数据 / 日志（含真实数据，禁止入库）============
+boxcode_data.json
+push_history.log
+server.log
+*.log
+
+# ============ 真实配置（含凭据，禁止入库；仓库提供 .example 模板）============
+/service_config.json
+/db_config.json
+/rack_config.json
+deploy-bundle/app/service_config.json
+deploy-bundle/app/db_config.json
+deploy-bundle/app/rack_config.json
+rcsbox-desktop/app/service_config.json
+rcsbox-desktop/app/db_config.json
+rcsbox-desktop/app/rack_config.json
+!*.example.json
+
+# ============ SSL 私钥 ============
+ssl/
+*.pem
+*.key
+
+# ============ 备份 / 临时 / 系统文件 ============
+*.bak
+*.bak-*
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# ============ WorkBuddy 项目数据 ============
+.workbuddy/
+**/.workbuddy/

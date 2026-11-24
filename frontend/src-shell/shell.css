@@ -1,0 +1,105 @@
+/**
+ * src-shell/shell.css — recreated scoped styles from DesktopLayout.vue /
+ * MobileLayout.vue (global dialog/toast styles already live in base.css).
+ */
+
+/* ============ desktop shell ============ */
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.app-header {
+  position: sticky; top: 0; z-index: 1000;
+  height: 64px;
+  background: linear-gradient(100deg, var(--brand-900), var(--brand-700) 46%, var(--brand-500));
+  box-shadow: 0 6px 24px rgba(10, 26, 60, 0.28);
+}
+/* 与 app-main 同宽同内边距：标题/副标题与下方内容卡片左边缘严格对齐 */
+.hd-inner {
+  width: 100%; max-width: 1440px; height: 100%; margin: 0 auto;
+  padding: 0 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.hd-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.hd-logo { width: 34px; height: 34px; border-radius: 9px; background: #fff; padding: 3px; flex: none; }
+.hd-title { color: #fff; font-size: 1.02rem; font-weight: 800; letter-spacing: 0.01em; }
+.hd-sub { color: rgba(219, 234, 254, 0.66); font-size: 0.72rem; }
+.hd-db-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff; backdrop-filter: blur(6px);
+}
+.hd-db-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.app-main {
+  flex: 1; width: 100%; max-width: 1440px; margin: 0 auto;
+  padding: 26px 40px 56px; position: relative;
+  background: var(--canvas-shell);
+}
+.app-main > * { position: relative; z-index: 1; }
+.page-loading { text-align: center; color: var(--ink-500); padding: 60px 0; }
+
+/* module dialog inner scroll (page lives in .box-body) */
+.mask > .box > .box-body { overflow: auto; }
+
+@media (max-width: 1024px) {
+  .app-main { padding: 20px 18px 40px; }
+  .hd-inner { padding: 0 18px; }
+  .hd-sub { display: none; }
+}
+
+/* ============ mobile shell ============ */
+.m-shell {
+  min-height: 100vh; display: flex; flex-direction: column;
+  background: var(--canvas-shell);   /* 与桌面端同色，护眼无光晕 */
+}
+.m-header {
+  position: sticky; top: 0; z-index: 900;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(115deg, var(--brand-900), var(--brand-700) 52%, var(--brand-500));
+  box-shadow: 0 4px 18px rgba(10, 26, 60, 0.25);
+}
+.m-back, .m-more {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; background: rgba(255, 255, 255, 0.12); flex: none;
+  border: none; cursor: pointer;
+}
+.m-title-wrap { flex: 1; min-width: 0; }
+.m-title {
+  color: #fff; font-weight: 800; font-size: 0.98rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.m-tag { color: rgba(219, 234, 254, 0.62); font-size: 0.66rem; }
+.m-main { flex: 1; padding: 14px 12px calc(76px + env(safe-area-inset-bottom)); }
+.m-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 950;
+  display: flex; background: var(--surface);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line-soft);
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 18px rgba(15, 38, 87, 0.07);
+}
+.m-nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 5px 0 3px; color: var(--ink-400);
+  font-size: 0.66rem; font-weight: 600;
+  transition: color 0.2s ease; border-radius: 10px;
+  border: none; background: transparent; cursor: pointer; font-family: inherit;
+}
+.m-nav-item.active { color: var(--brand-500); }
+.m-more-sheet {
+  position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
+  z-index: 3401; width: 100%; max-width: 480px;
+  background: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-xl);
+  animation: m-sheet-up 0.26s cubic-bezier(0.34, 1.1, 0.64, 1);
+}
+@keyframes m-sheet-up { from { transform: translate(-50%, 100%); } }
+.m-more-list { padding: 8px 0 calc(14px + env(safe-area-inset-bottom)); }
+.m-more-item {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 14px 20px; font-size: 0.92rem; font-weight: 600;
+  color: var(--ink-700); text-align: left;
+  border: none; background: transparent; cursor: pointer; font-family: inherit;
+}
+.m-more-item svg { color: var(--brand-500); flex: none; }
+.m-more-arrow { margin-left: auto; color: var(--ink-400); }

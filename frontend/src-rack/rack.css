@@ -1,0 +1,149 @@
+/**
+ * src-rack/rack.css — rack monitor scoped styles (recreated; Vue scoped CSS
+ * never applies to React DOM). Legend dot modifiers use rk- prefix to avoid
+ * collisions with global utility classes (e.g. .empty is EmptyState!).
+ */
+
+/* ---- KPI row ---- */
+.rk-root { display: flex; flex-direction: column; gap: 16px; }
+.rk-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+
+/* ---- toolbar ---- */
+.rk-toolbar { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+.rt-field { display: flex; align-items: center; gap: 8px; }
+.rt-search { flex: 1 1 260px; max-width: 360px; }
+.rt-search .ipt { flex: 1; }
+.rt-actions { margin-left: auto; display: flex; gap: 8px; }
+
+/* ---- legend (unified 12px dots, prefixed modifiers) ---- */
+.rk-legend {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  font-size: 0.78rem; color: var(--ink-500);
+}
+.rk-legend .lg { display: inline-flex; align-items: center; gap: 6px; }
+.rk-legend .dot {
+  width: 12px; height: 12px; border-radius: 4px;
+  display: inline-block; flex: none; box-sizing: border-box;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+.dot-full { background: var(--err); }
+.dot-partial { background: var(--warn); }
+.dot-empty { background: var(--ok); }
+.dot-locked { background: var(--ink-400); }
+.rk-updated { margin-left: auto; color: var(--ink-400); }
+
+/* ---- error / loading ---- */
+.rk-error, .rk-loading, .rk-empty {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--line-soft);
+  font-size: 14px;
+}
+.rk-error { color: var(--err); }
+.rk-loading { color: var(--ink-500); justify-content: center; }
+.spinner {
+  width: 16px; height: 16px; flex: none;
+  border: 2px solid var(--brand-100); border-top-color: var(--brand-500);
+  border-radius: 50%; animation: rk-spin 0.8s linear infinite;
+}
+@keyframes rk-spin { to { transform: rotate(360deg); } }
+
+/* ---- rack cards ---- */
+.rk-card { padding: 14px 16px 16px; margin-bottom: 2px; }
+.rk-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.rk-code { font-weight: 800; font-size: 1.02rem; color: var(--ink-900); margin-right: 8px; }
+.rk-meta { font-size: 0.74rem; color: var(--ink-400); }
+.rk-stats { font-size: 0.78rem; color: var(--ink-500); }
+.rk-stats .occ { color: var(--brand-600); font-weight: 700; }
+
+.rk-grid {
+  display: grid; grid-template-columns: repeat(var(--cols), minmax(20px, 1fr));
+  gap: 3px; overflow-x: auto; padding-bottom: 4px;
+}
+.col-cell {
+  height: 34px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; min-width: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.col-cell:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15, 38, 87, 0.18); }
+.col-num { font-size: 0.72rem; font-weight: 700; color: rgba(255, 255, 255, 0.95); }
+.col-full { background: var(--err); }
+.col-partial { background: var(--warn); }
+.col-empty { background: var(--ok); }
+.col-locked { background: var(--ink-400); }
+.col-none { background: var(--line-soft); cursor: default; }
+
+/* ---- column detail modal ---- */
+.col-detail .tbl { table-layout: fixed; width: 100%; }
+.col-detail .tbl th,
+.col-detail .tbl td { white-space: normal; word-break: break-all; }
+.col-detail .tbl .col-update { white-space: nowrap; }
+.cd-summary {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 12px;
+  background: var(--brand-50); font-size: 0.82rem;
+}
+.cd-summary .occ { color: var(--brand-600); }
+.cd-summary.status-empty { background: var(--ok-bg); }
+.cd-summary.status-partial { background: var(--warn-bg); }
+.cd-summary.status-full { background: var(--err-bg); }
+.cd-summary.status-locked { background: var(--line-soft); }
+.cd-summary .stx-empty { color: var(--ok-ink); }
+.cd-summary .stx-partial { color: var(--warn); }
+.cd-summary .stx-full { color: var(--err); }
+.cd-summary .stx-locked { color: var(--ink-500); }
+
+/* ---- status badge (rack semantics: full/empty/locked) ---- */
+.status-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700;
+}
+.status-full { background: var(--err-bg); color: var(--err-ink); }
+.status-empty { background: var(--ok-bg); color: var(--ok-ink); }
+.status-locked { background: var(--line); color: var(--ink-500); }
+.row-full { background: var(--err-bg); }
+.row-locked { background: var(--line-soft); }
+
+/* ---- search results modal ---- */
+.search-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.search-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--line-soft);
+  cursor: pointer; transition: all 0.2s ease;
+}
+.search-item:hover { border-color: var(--brand-100); box-shadow: var(--shadow-sm); }
+.si-main { flex: 1; min-width: 0; }
+.si-bin { font-weight: 700; font-size: 0.88rem; color: var(--ink-900); }
+.si-sub { display: flex; gap: 14px; font-size: 0.74rem; color: var(--ink-400); flex-wrap: wrap; }
+.si-arrow { color: var(--ink-400); flex: none; }
+
+/* ---- radio pills (port of Vue RadioPills scoped styles) ---- */
+.radio-pill-group { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+.radio-pill { position: relative; cursor: pointer; }
+.radio-pill input { position: absolute; opacity: 0; pointer-events: none; }
+.radio-pill span {
+  display: inline-flex; align-items: center;
+  height: 32px; padding: 0 14px; border-radius: 999px;
+  font-size: 0.82rem; font-weight: 600; color: var(--ink-500);
+  background: var(--surface); border: 1px solid var(--line);
+  transition: all 0.2s ease;
+}
+.radio-pill.active span {
+  background: var(--brand-500); border-color: var(--brand-500); color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.32);
+}
+
+@media (max-width: 1100px) {
+  .rk-kpis { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 1024px) {
+  .rt-search { flex: 1 1 100%; max-width: none; }
+  .rt-actions { margin-left: 0; width: 100%; }
+  .rt-actions .btn { flex: 1; }
+}

@@ -1,0 +1,338 @@
+/**
+ * ============================================================================
+ * src-home/home.css — 首页样式（hm- 前缀，自包含）
+ * ----------------------------------------------------------------------------
+ * 工业后台风格：白底卡片 + 纯色主题（大蓝/大绿/大红/大橙）+ 线性图标。
+ * 图标与入口均为淡彩底 + 主题色字，无顶部色条、无渐变、无发光。
+ * 令牌全部来自 src-ui/tokens.css；卡片圆角统一 12px，间距统一。
+ * ============================================================================
+ */
+
+.hm-root {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ============ 顶部：快捷入口 + 指标（与下方功能模块同一套白底卡片） ============ */
+.hm-top {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hm-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* 轻量 Tab：默认灰字、无填充；hover/聚焦=主蓝字 + 底部 2px 蓝线（企业后台标准态） */
+.hm-tabs {
+  display: flex;
+  gap: 6px;
+}
+.hm-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 14px;
+  border: none;
+  background: transparent;
+  color: var(--ui-ink-500);
+  font-family: inherit;
+  font-size: var(--ui-fs-14);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color var(--ui-dur-base) var(--ui-ease);
+}
+.hm-tab::after {
+  content: '';
+  position: absolute;
+  left: 14px; right: 14px; bottom: 0;
+  height: 2px;
+  background: var(--ui-brand-600);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform var(--ui-dur-base) var(--ui-ease);
+}
+.hm-tab:hover,
+.hm-tab:focus-visible { color: var(--ui-brand-600); }
+.hm-tab:hover::after,
+.hm-tab:focus-visible::after { transform: scaleX(1); }
+.hm-tab:focus-visible { outline: none; }
+
+/* 时间戳：小字浅灰，不显眼 */
+.hm-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ui-fs-12);
+  font-weight: 500;
+  color: var(--ui-ink-400);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex: none;
+}
+.hm-clock svg { color: var(--ui-ink-400); }
+
+.hm-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+/* 指标卡：去顶部彩条 + 大圆角 + 柔和层次阴影 + 彩色线性图标（各指标一色） */
+.hm-kpis .ui-kpi {
+  border-radius: 12px;
+  padding: 16px 18px;
+  border-color: var(--ui-line-soft);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 14px rgba(16, 24, 40, 0.05);
+  transition: box-shadow var(--ui-dur-base) var(--ui-ease), transform var(--ui-dur-base) var(--ui-ease);
+}
+.hm-kpis .ui-kpi::before { display: none; }             /* 去掉顶部彩色条 */
+.hm-kpis .ui-kpi:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(16, 24, 40, 0.05), 0 8px 22px rgba(16, 24, 40, 0.09); }
+.hm-kpis .ui-kpi__label svg { color: var(--kpi-accent, var(--ui-brand-600)); }
+.hm-kpis .ui-kpi__value { color: var(--kpi-accent, var(--ui-ink-900)); }
+.hm-top__error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--ui-err-bg);
+  border: 1px solid rgba(180, 35, 24, 0.22);
+  font-size: var(--ui-fs-13);
+  color: #9f2d20;
+}
+.hm-top__error svg { color: #9f2d20; }
+
+/* ============ 区块标题 ============ */
+.hm-cap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--ui-fs-13);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ui-ink-500);
+  margin-top: 4px;
+}
+.hm-cap::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ui-line-soft);
+}
+
+/* ============ 功能卡网格 ============ */
+.hm-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.hm-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line-soft);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.05);
+  overflow: hidden;
+  cursor: default;
+  transition: border-color var(--ui-dur-base) var(--ui-ease),
+              box-shadow var(--ui-dur-base) var(--ui-ease),
+              transform var(--ui-dur-base) var(--ui-ease);
+}
+/* 无顶部色条：靠图标淡彩底 + hover 主题色柔光营造层次（现代简约手法） */
+.hm-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--card-solid, var(--ui-brand-500)) 28%, var(--ui-line-soft));
+  box-shadow: 0 4px 10px rgba(16, 24, 40, 0.06), 0 14px 34px -8px var(--card-glow, rgba(79, 70, 229, 0.20));
+}
+
+.hm-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-bottom: 10px;
+}
+.hm-card__headtext {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.hm-card__icon {
+  width: 46px; height: 46px;
+  border-radius: 11px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--card-soft, #e3f2fd);         /* 淡彩底 */
+  color: var(--card-solid, #1565c0);             /* 纯色线性图标 */
+  flex: none;
+}
+.hm-card__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ui-ink-900);
+  line-height: 1.3;
+}
+.hm-card__desc {
+  font-size: var(--ui-fs-12);
+  color: var(--ui-ink-400);
+  line-height: 1.5;
+}
+
+/* ============ 入口按钮（双/三入口共用） ============ */
+.hm-card__entries { display: grid; gap: 8px; width: 100%; }
+.hm-card__entries--dual { grid-template-columns: 1fr 1fr; }
+.hm-card__entries--triple { grid-template-columns: repeat(3, 1fr); }
+
+.hm-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--card-soft, #e3f2fd);          /* 淡彩底 */
+  border: 1px solid transparent;
+  color: var(--card-solid, #1565c0);              /* 纯色字 */
+  font-size: var(--ui-fs-14);
+  font-weight: 600;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--ui-dur-base) var(--ui-ease),
+              color var(--ui-dur-base) var(--ui-ease),
+              border-color var(--ui-dur-base) var(--ui-ease);
+}
+.hm-entry:hover {
+  background: var(--ui-surface);
+  border-color: var(--card-solid, #1565c0);
+  color: var(--card-solid, #1565c0);
+}
+.hm-entry:focus-visible { outline: 2px solid var(--card-solid, #1565c0); outline-offset: 2px; }
+.hm-entry__icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--card-solid, #1565c0);
+  flex: none;
+  transition: color var(--ui-dur-base) var(--ui-ease);
+}
+.hm-entry:hover .hm-entry__icon { color: var(--card-solid, #1565c0); }
+.hm-entry__sub { color: var(--card-solid, #1565c0); opacity: 0.7; }
+.hm-entry:hover .hm-entry__sub { opacity: 0.85; }
+.hm-entry__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hm-entry__text--row { flex-direction: row; align-items: center; }
+.hm-entry__main {
+  font-size: var(--ui-fs-14);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.hm-entry__sub {
+  font-size: var(--ui-fs-12);
+  font-weight: 600;
+  color: var(--ui-ink-400);
+  line-height: 1.2;
+}
+.hm-entry:hover .hm-entry__sub { color: var(--ui-ink-500); }
+.hm-entry__arrow { opacity: 0.6; }
+
+/* 三入口扁平变体（文字单行） */
+.hm-entry--flat { font-size: 13px; }
+
+/* ============ 设置齿轮（线性描边，无实色填充） ============ */
+.hm-gear {
+  margin-left: auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--ui-line-soft);
+  background: var(--ui-surface);
+  color: var(--ui-ink-400);
+  cursor: pointer;
+  flex: none;
+  transition: color var(--ui-dur-fast) var(--ui-ease),
+              border-color var(--ui-dur-fast) var(--ui-ease);
+}
+.hm-gear:hover { border-color: var(--ui-brand-300); color: var(--ui-brand-600); }
+
+/* ============ 告警查询：白底 + 暗红描边（在红色主题卡中独立突出，不撞色） ============ */
+.hm-entry--danger {
+  color: #b42318 !important;
+  background: var(--ui-surface) !important;
+  border-color: rgba(180, 35, 24, 0.28) !important;
+}
+.hm-entry--danger .hm-entry__icon { color: #b42318 !important; background: #fef3f2 !important; }
+.hm-entry--danger .hm-entry__sub { color: var(--ui-ink-400) !important; opacity: 0.7; }
+.hm-entry--danger:hover {
+  background: #fef3f2 !important;
+  border-color: rgba(180, 35, 24, 0.5) !important;
+  color: #9f2d20 !important;
+}
+.hm-entry--danger:hover .hm-entry__icon { color: #9f2d20 !important; }
+
+/* ============ 手动任务设置弹窗 ============ */
+.hm-mtset { display: flex; flex-direction: column; gap: 10px; min-width: 360px; }
+.hm-mtset__tip {
+  margin: 0;
+  font-size: var(--ui-fs-13);
+  line-height: 1.6;
+  color: var(--ui-ink-500);
+}
+.hm-mtset__label {
+  font-size: var(--ui-fs-13);
+  font-weight: 700;
+  color: var(--ui-ink-700);
+}
+.hm-mtset__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--ui-line-soft);
+  border-radius: var(--ui-r-ctrl);
+  font-size: var(--ui-fs-14);
+  line-height: 1.5;
+  font-family: inherit;
+  outline: none;
+  min-height: 92px;      /* 用户钦定加高 */
+  resize: vertical;
+  color: var(--ui-ink-900);
+}
+.hm-mtset__input:focus {
+  border-color: var(--ui-brand-500);
+  box-shadow: 0 0 0 2px var(--ui-brand-50);
+}
+.hm-mtset__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 1100px) {
+  .hm-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1024px) {
+  .hm-kpis { grid-template-columns: repeat(2, 1fr); }
+  .hm-clock { display: none; }
+}
+@media (max-width: 720px) {
+  .hm-grid { grid-template-columns: 1fr; }
+  .hm-card__entries--dual { grid-template-columns: 1fr; }
+  .hm-card__entries--triple { grid-template-columns: 1fr; }
+}

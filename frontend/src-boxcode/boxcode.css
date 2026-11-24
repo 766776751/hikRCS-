@@ -1,0 +1,197 @@
+/* ==========================================================================
+   src-boxcode/boxcode.css — 料箱码/托盘码管理样式
+   遵循 design tokens（浅色主题），仅模块内 bc- 前缀，避免污染全局。
+   ========================================================================== */
+
+.bc-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--ink-900);
+}
+
+/* ---------- top: type switch + actions ---------- */
+.bc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.bc-type-switch {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.bc-type-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-sans);
+}
+.bc-type-tab:hover { background: #fff; }
+.bc-type-tab.active {
+  background: #fff;
+  color: var(--bc-accent, var(--brand-600));
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm);
+}
+.bc-type-count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--brand-50);
+  color: var(--brand-600);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.bc-type-tab.active .bc-type-count {
+  background: color-mix(in srgb, var(--bc-accent, var(--brand-600)) 12%, #fff);
+  color: var(--bc-accent, var(--brand-600));
+}
+.bc-top-actions { display: flex; gap: 8px; }
+
+/* ---------- rule strip ---------- */
+.bc-rule-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--ink-700);
+}
+.bc-rule-item b { color: var(--brand-700); font-weight: 700; }
+.bc-rule-hint { margin-left: auto; color: var(--ink-500); font-size: 12px; }
+.bc-sep { width: 1px; height: 16px; background: var(--brand-100); }
+
+/* ---------- three columns ---------- */
+.bc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.bc-card { padding: 20px; }
+.bc-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.bc-card-head h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--ink-900); }
+.bc-card-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+}
+.bc-card-ico.add { background: var(--brand-50); color: var(--brand-600); }
+.bc-card-ico.reduce { background: var(--err-bg); color: var(--err); }
+.bc-card-ico.stats { background: var(--violet-bg); color: var(--violet); }
+
+.bc-form { display: flex; flex-direction: column; gap: 6px; }
+.bc-form .ui-btn { margin-top: 10px; width: 100%; }
+.bc-form .field { font-size: 13px; font-weight: 600; color: var(--ink-700); display: flex; flex-direction: column; gap: 6px; }
+.bc-hint { display: block; color: var(--ink-400); font-size: 12px; margin: 0 0 8px; }
+.bc-hint-block { margin-top: 12px; line-height: 1.5; }
+
+/* ---------- stats card ---------- */
+.bc-stat-big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 0 20px;
+}
+.bc-stat-label { font-size: 13px; color: var(--ink-500); }
+.bc-stat-num { font-size: 42px; font-weight: 800; color: var(--brand-600); line-height: 1; }
+.bc-stat-actions { display: flex; flex-direction: column; gap: 8px; }
+.bc-stat-actions .ui-btn { width: 100%; }
+.bc-stat-foot {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 12px;
+  color: var(--ink-400);
+  text-align: center;
+}
+
+/* ---------- modals ---------- */
+.bc-modal-form { display: flex; flex-direction: column; gap: 6px; }
+.bc-modal-form .field { font-size: 13px; font-weight: 600; color: var(--ink-700); display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.bc-tip {
+  margin: 0 0 6px;
+  padding: 10px 12px;
+  background: var(--brand-50);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--brand-700);
+}
+.bc-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-700);
+  cursor: pointer;
+}
+.bc-check input { width: 16px; height: 16px; accent-color: var(--brand-500); }
+.bc-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+.bc-prefix-input { display: flex; align-items: center; gap: 8px; }
+.bc-prefix-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  padding: 0 10px;
+  height: 38px;
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--brand-600);
+  font-weight: 700;
+}
+.bc-prefix-input .ipt { flex: 1; }
+
+.num { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1100px) {
+  .bc-grid { grid-template-columns: 1fr; }
+  .bc-rule-hint { margin-left: 0; }
+}
+@media (max-width: 767px) {
+  .bc-top { flex-direction: column; align-items: stretch; }
+  .bc-type-switch { width: 100%; }
+  .bc-type-tab { flex: 1; justify-content: center; padding: 9px 8px; }
+  .bc-stat-num { font-size: 36px; }
+}
